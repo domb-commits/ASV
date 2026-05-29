@@ -1,6 +1,28 @@
 (function(){
     if(document.getElementById("custom-floating-menu")) return;
 
+    // =========================================================================
+    // MASTER CONFIGURATION: EDIT THIS LIST ON GITHUB TO UPDATE ALL PCs AT ONCE
+    // =========================================================================
+    const MASTER_PA = [
+        { o: "777-0252", d: "112-0030" },
+        { o: "102-0026", d: "102-0027" },
+        { o: "777-0061", d: "107-0003" },
+        { o: "101-0164", d: "101-0154" },
+        { o: "102-0035", d: "102-0012" },
+        { o: "118-0010", d: "777-0079" },
+        { o: "111-0089", d: "111-0016" },
+        { o: "118-0011", d: "777-0123" },
+        { o: "777-0232", d: "777-0220" },
+        { o: "101-0180", d: "101-0181" },
+        { o: "777-0160", d: "116-0109" },
+        { o: "101-0187", d: "101-0126" },
+        { o: "101-0185", d: "101-0039" },
+        { o: "117-0079", d: "117-0007" },
+        { o: "102-0036", d: "102-0029" }
+    ];
+    // =========================================================================
+
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     document.head.appendChild(s);
@@ -42,7 +64,7 @@
     };
     document.addEventListener('focusin',(ev)=>{if(ev.target.closest('#custom-floating-menu'))prevent(ev);},true);
 
-    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:120px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
 
     p.querySelectorAll('input').forEach(inp => {
@@ -75,13 +97,25 @@
         const u = document.getElementById('sam_ul');
         if(!u) return;
         u.innerHTML = '';
-        if(sw.length === 0){
+        
+        if(MASTER_PA.length === 0 && sw.length === 0){
             u.innerHTML = '<li style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay cambios activos</li>';
+            return;
         }
+
+        // Render centralized master list from GitHub
+        MASTER_PA.forEach((s) => {
+            let li = document.createElement('li');
+            li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:8px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;background:#f4f9ff;";
+            li.innerHTML = `<span style="color:#0d47a1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Desde GitHub">☁️ <b>${s.o}</b> ➞ <b>${s.d}</b></span><span style="color:#adb5bd;font-size:9px;font-weight:bold;padding:0 6px;">GH</span>`;
+            u.appendChild(li);
+        });
+
+        // Render local overrides from computer session
         sw.forEach((s,idx) => {
             let li = document.createElement('li');
             li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:8px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
-            li.innerHTML = `<span style="color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><b>${s.o}</b> ➞ <b>${s.d}</b></span><span style="color:#fa5252;cursor:pointer;font-weight:bold;padding:0 6px;" id="sd_${idx}">✕</span>`;
+            li.innerHTML = `<span style="color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💻 <b>${s.o}</b> ➞ <b>${s.d}</b></span><span style="color:#fa5252;cursor:pointer;font-weight:bold;padding:0 6px;" id="sd_${idx}">✕</span>`;
             u.appendChild(li);
             document.getElementById(`sd_${idx}`).onclick = () => {
                 sw.splice(idx,1);
@@ -146,10 +180,11 @@
     },100);
 
     const as = () => {
-        if(!sw.length) return;
+        const total_sw = [...MASTER_PA, ...sw];
+        if(!total_sw.length) return;
         document.querySelectorAll('select[id^="cbo_farmaco_"]').forEach(sel => {
             let t = sel.options[sel.selectedIndex]?.text||"", v = sel.value||"";
-            let m = sw.find(s => t.includes(s.o)||v.includes(s.o));
+            let m = total_sw.find(s => t.includes(s.o)||v.includes(s.o));
             if(m){
                 let opt = Array.from(sel.options).find(opt => opt.text.includes(m.d)||opt.value.includes(m.d));
                 if(opt){
@@ -165,11 +200,12 @@
     };
 
     const m_as = () => {
-        if(!sw.length){ alert("No hay cambios configurados."); return; }
+        const total_sw = [...MASTER_PA, ...sw];
+        if(!total_sw.length){ alert("No hay cambios configurados."); return; }
         let c = 0;
         document.querySelectorAll('select[id^="cbo_farmaco_"]').forEach(sel => {
             let t = sel.options[sel.selectedIndex]?.text||"", v = sel.value||"";
-            let m = sw.find(s => t.includes(s.o)||v.includes(s.o));
+            let m = total_sw.find(s => t.includes(s.o)||v.includes(s.o));
             if(m){
                 let opt = Array.from(sel.options).find(opt => opt.text.includes(m.d)||opt.value.includes(m.d));
                 if(opt){
