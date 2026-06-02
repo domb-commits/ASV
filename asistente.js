@@ -41,11 +41,9 @@
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
     t.innerText = "ASISTENTE DE VALIDACIÓN";
 
-    // SECRET ACTION: Double click the blue header title bar to unlock input editing safely
+    // SECRET ACTION: Double click the blue header title bar to unlock input editing silently
     t.ondblclick = () => {
-        const inputs = document.querySelectorAll('input[id^="txt_cantidad_qf_"]');
-        inputs.forEach(inp => inp.removeAttribute('readonly'));
-        alert(`Edición libre activada (${inputs.length} campos).`);
+        document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
     };
 
     const n = document.createElement("span");
@@ -243,9 +241,11 @@
             if(arguments.length > 0 && this.hasClass("class_valida") && !isNaN(parseFloat(e))){
                 let baseVal = parseFloat(e);
                 
-                // Divides insanely large suggested values (>=100) by 10 before applying multiplier
-                if (baseVal >= 100) {
-                    baseVal = baseVal / 10;
+                // Divides values over 1000 by 100, defaults to 1 if it falls between 100 and 1000
+                if (baseVal >= 1000) {
+                    baseVal = baseVal / 100;
+                } else if (baseVal >= 100) {
+                    baseVal = 1;
                 }
                 
                 return window._origVal.call(this, Math.round(baseVal * t));
