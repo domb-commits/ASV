@@ -237,10 +237,12 @@
                 let baseVal = parseFloat(e);
                 
                 // Divides insanely large suggested values (>=100) by 100 before applying multiplier
-                if (baseVal >= 100) {
-                    baseVal = baseVal / 100; // NOTE: change to "baseVal / 10" if you meant division by 10
+                if (baseVal >= 1000) {
+                    baseVal = baseVal / 100;
                 }
-                
+                else if (baseVal => 100) {
+                    baseVal = 1;
+                }
                 return window._origVal.call(this, Math.round(baseVal * t));
             }
             return window._origVal.apply(this,arguments);
