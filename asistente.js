@@ -263,7 +263,7 @@
     o.appendChild(rowM);
 
     o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
-    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
+    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega Hospitalizados y valida"));
     o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
     o.appendChild(v("LIMPIAR ENTREGAS (0)","#fff3cd",()=>{document.querySelectorAll('input').forEach(e=>{if(/^txt_lote_cantidad_\d+_\d+$/.test(e.id)){e.value="0";if(window.jQuery)jQuery(e).trigger("change");}})},!1,null,"#856404","Deja todas las cantidades de entrega en 0"));
 
@@ -282,7 +282,13 @@
     o.appendChild(sep);
 
     o.appendChild(v("FIX STOCK NEGATIVO","#fde2e4",()=>{var h=document.querySelectorAll('input[type=\"hidden\"][id^=\"txt_disponible_\"]');var count=0;h.forEach(function(i){var v=parseFloat(i.value);if(!isNaN(v)&&v<0){i.value=Math.abs(v);count++}});if(count>0)alert('Corregidos '+count+' negativos.');else alert('No hay negativos.')},!1,null,"#a35a5a","Convierte stock negativo en positivo"));
-
+    // New button to unlock inputs starting with txt_cantidad_qf_
+    o.appendChild(v("EDITAR VALIDADO","#f8f9fa",()=>{
+        const inputs = document.querySelectorAll('input[id^="txt_cantidad_qf_"]');
+        inputs.forEach(inp => inp.removeAttribute('readonly'));
+        alert(`Se desbloquearon ${inputs.length} campos de cantidad.`);
+    },!1,null,"#495057","Permite cambiar la cantidad validada sin desvalidar"));
+    
     const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
     rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
