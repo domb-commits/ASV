@@ -243,7 +243,7 @@
                 
                 // Divides values over 1000 by 100, defaults to 1 if it falls between 100 and 1000
                 if (baseVal >= 1000) {
-                    baseVal = baseVal / 100;
+                    baseVal = Math.ceil(baseVal / 1000);
                 } else if (baseVal >= 100) {
                     baseVal = 1;
                 }
