@@ -292,7 +292,15 @@
     o.appendChild(v("IR A FICHA PACIENTE","#9dc1e6",()=>{
         const n = document.evaluate('//*[@id="collapsePaciente"]/div/div/table/tbody/tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         if(n && n.innerText.trim()){
-            window.open(`http://10.7.33.28/hlcm6/rceint001.php?id=${n.innerText.trim()}`, '_blank');
+            const cta = n.innerText.trim();
+            const titleEl = document.getElementById('titulo_farmacos_hospitalizado');
+            let url = `http://10.7.33.28/hlcm6/rceint001.php?id=${cta}`; // Default to ambulatorio
+            
+            if (titleEl && titleEl.innerText.toLowerCase().includes('hospitalizado')) {
+                url = `http://10.7.33.28/hlcm6/atehos003.php?id=${cta}`;
+            }
+            
+            window.open(url, '_blank');
         } else {
             alert('No se pudo encontrar el CTACTE.');
         }
