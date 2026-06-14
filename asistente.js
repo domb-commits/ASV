@@ -285,6 +285,19 @@
     o.appendChild(rowR);
     o.appendChild(v("REABRIR PARA EDITAR","#e2e3e5",()=>rej(1,"Reapertura por corrección",!1),!1,null,"#383d41","Reabre la receta sin cerrar la ventana"));
 
+    const sep2 = document.createElement("div");
+    sep2.className = "sam-separator";
+    o.appendChild(sep2);
+
+    o.appendChild(v("IR A FICHA PACIENTE","#9dc1e6",()=>{
+        const n = document.evaluate('//*[@id="collapsePaciente"]/div/div/table/tbody/tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        if(n && n.innerText.trim()){
+            window.open(`http://10.7.33.28/hlcm6/rceint001.php?id=${n.innerText.trim()}`, '_blank');
+        } else {
+            alert('No se pudo encontrar el CTACTE.');
+        }
+    },!1,null,"#0d3460","Abre la ficha del paciente"));
+
     const sep = document.createElement("div");
     sep.className = "sam-separator";
     o.appendChild(sep);
