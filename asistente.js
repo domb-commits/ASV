@@ -44,7 +44,6 @@
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
     t.innerText = "ASISTENTE DE VALIDACIÓN";
 
-    // SECRET ACTION: Double click the blue header title bar to unlock input editing silently
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
     };
@@ -68,6 +67,9 @@
     const p = document.createElement("div");
     p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
 
+    const s_view = document.createElement("div");
+    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+
     const prevent = (ev) => {
         ev.stopPropagation();
         if(ev.type==='focusin'||ev.type==='keydown') ev.stopImmediatePropagation();
@@ -76,6 +78,9 @@
 
     p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
+
+    s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="max-height:200px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:5px;margin-top:2px;"><button id="sam_serv_clear" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    e.appendChild(s_view);
 
     p.querySelectorAll('input').forEach(inp => {
         ['keydown','keyup','keypress','focus','blur'].forEach(t => inp.addEventListener(t,(ev) => ev.stopPropagation(),true))
@@ -113,7 +118,6 @@
             return;
         }
 
-        // Render centralized master list from GitHub
         MASTER_PA.forEach((s) => {
             let li = document.createElement('li');
             li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:8px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;background:#f4f9ff;";
@@ -121,7 +125,6 @@
             u.appendChild(li);
         });
 
-        // Render local overrides from computer session
         sw.forEach((s,idx) => {
             let li = document.createElement('li');
             li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:8px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
@@ -138,9 +141,7 @@
     const cp = (t) => {
         if(navigator.clipboard && navigator.clipboard.writeText){
             navigator.clipboard.writeText(t).then(() => alert("Copiado!")).catch(() => {cpF(t)});
-        }else{
-            cpF(t);
-        }
+        }else{ cpF(t); }
     };
 
     const cpF = (t) => {
@@ -148,12 +149,8 @@
         ta.value = t;
         document.body.appendChild(ta);
         ta.select();
-        try {
-            document.execCommand('copy');
-            alert("Código de sincronización copiado (Fallback).");
-        } catch(err) {
-            alert("Error al copiar.");
-        }
+        try { document.execCommand('copy'); alert("Código de sincronización copiado (Fallback)."); } 
+        catch(err) { alert("Error al copiar."); }
         document.body.removeChild(ta);
     };
 
@@ -163,8 +160,7 @@
             if(o_v && d_v){
                 sw.push({o:o_v,d:d_v});
                 localStorage.setItem('sam_sw',JSON.stringify(sw));
-                document.getElementById('sam_og').value = '';
-                document.getElementById('sam_ds').value = '';
+                document.getElementById('sam_og').value = ''; document.getElementById('sam_ds').value = '';
                 rs();
             }
         };
@@ -176,16 +172,13 @@
                 try {
                     const data = JSON.parse(atob(code));
                     if(Array.isArray(data)){
-                        sw = data;
-                        localStorage.setItem('sam_sw',JSON.stringify(sw));
-                        rs();
-                        alert("Sincronización exitosa.");
+                        sw = data; localStorage.setItem('sam_sw',JSON.stringify(sw));
+                        rs(); alert("Sincronización exitosa.");
                     }
-                } catch(err) {
-                    alert("Código inválido.");
-                }
+                } catch(err) { alert("Código inválido."); }
             }
         };
+        document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; };
         rs();
     },100);
 
@@ -233,24 +226,82 @@
         alert(`Se aplicaron ${c} cambios por PA.`);
     };
 
+    let dt_instance = null;
+    const initRegexAndPopulate = () => {
+        try {
+            var j = window.$ || window.jQuery;
+            if(!j || !j.fn.dataTable){ alert('jQuery/DataTables no encontrado.'); return false; }
+            dt_instance = j('#tbl_resultado').DataTable();
+            var inp = j('#dt-search-0');
+            if(!inp.length){ alert('Input de búsqueda no encontrado.'); return false; }
+            
+            inp.off();
+            inp.on('input', function(){ dt_instance.search(this.value, true, false).draw(); });
+
+            let serv_col_idx = null;
+            j('#tbl_resultado thead th').each(function(i){
+                if(/(SERVICIO|SOLICITANTE)/i.test(j(this).text())) serv_col_idx = i;
+            });
+
+            if(serv_col_idx === null) {
+                alert("Regex activado. Sin embargo, no se encontró la columna 'SERVICIO' para generar el menú visual.");
+                return false;
+            }
+
+            let unique_servs = new Set();
+            dt_instance.column(serv_col_idx).data().each(function(val){
+                let text = j('<div>').html(val).text().trim();
+                if(text) unique_servs.add(text);
+            });
+
+            const list = document.getElementById('sam_serv_list');
+            list.innerHTML = '';
+            
+            if(unique_servs.size === 0) {
+                list.innerHTML = '<div style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay servicios en la tabla</div>';
+            } else {
+                Array.from(unique_servs).sort().forEach((srv, i) => {
+                    let div = document.createElement('div');
+                    div.style.cssText = "display:flex;align-items:center;gap:6px;font-size:10px;padding:4px;border-bottom:1px solid #f8f9fa;";
+                    div.innerHTML = `<input type="checkbox" id="srv_cb_${i}" value="${srv}" class="sam-srv-cb" style="cursor:pointer;margin:0;"><label for="srv_cb_${i}" style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" title="${srv}">${srv}</label>`;
+                    list.appendChild(div);
+                });
+            }
+
+            const updateSearch = () => {
+                let checked = Array.from(document.querySelectorAll('.sam-srv-cb:checked')).map(c => {
+                    return j.fn.dataTable.util ? j.fn.dataTable.util.escapeRegex(c.value) : c.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                });
+                let searchStr = checked.join('|');
+                inp.val(searchStr);
+                dt_instance.search(searchStr, true, false).draw();
+            };
+
+            document.querySelectorAll('.sam-srv-cb').forEach(cb => cb.addEventListener('change', updateSearch));
+            
+            document.getElementById('sam_serv_clear').onclick = () => {
+                document.querySelectorAll('.sam-srv-cb').forEach(cb => cb.checked = false);
+                updateSearch();
+            };
+
+            return true;
+        } catch(err) {
+            alert('Error: ' + err.message);
+            return false;
+        }
+    };
+
     let m_idx = -1;
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
-    // Function to handle value overrides based on base multiplier and error correction
     const multi = (t) => {
         if(window._origVal) jQuery.fn.val = window._origVal;
         window._origVal = jQuery.fn.val;
         jQuery.fn.val = function(e){
             if(arguments.length > 0 && this.hasClass("class_valida") && !isNaN(parseFloat(e))){
                 let baseVal = parseFloat(e);
-                
-                // Divides values over 1000 by 100, defaults to 1 if it falls between 100 and 1000
-                if (baseVal >= 1000) {
-                    baseVal = Math.ceil(baseVal / 1000);
-                } else if (baseVal >= 100) {
-                    baseVal = 1;
-                }
-                
+                if (baseVal >= 1000) baseVal = Math.ceil(baseVal / 1000);
+                else if (baseVal >= 100) baseVal = 1;
                 return window._origVal.call(this, Math.round(baseVal * t));
             }
             return window._origVal.apply(this,arguments);
@@ -294,16 +345,10 @@
         if(n && n.innerText.trim()){
             const cta = n.innerText.trim();
             const titleEl = document.getElementById('titulo_farmacos_hospitalizado');
-            let url = `http://10.7.33.28/hlcm6/rceint001.php?id=${cta}`; // Default to ambulatorio
-            
-            if (titleEl && titleEl.innerText.toLowerCase().includes('hospitalizado')) {
-                url = `http://10.7.33.28/hlcm6/atehos003.php?id=${cta}`;
-            }
-            
+            let url = `http://10.7.33.28/hlcm6/rceint001.php?id=${cta}`;
+            if (titleEl && titleEl.innerText.toLowerCase().includes('hospitalizado')) url = `http://10.7.33.28/hlcm6/atehos003.php?id=${cta}`;
             window.open(url, '_blank');
-        } else {
-            alert('No se pudo encontrar el CTACTE.');
-        }
+        } else { alert('No se pudo encontrar el CTACTE.'); }
     },!1,null,"#0d3460","Abre la ficha del paciente"));
 
     const sep = document.createElement("div");
@@ -312,8 +357,9 @@
 
     o.appendChild(v("FIX STOCK NEGATIVO","#fde2e4",()=>{var h=document.querySelectorAll('input[type=\"hidden\"][id^=\"txt_disponible_\"]');var count=0;h.forEach(function(i){var v=parseFloat(i.value);if(!isNaN(v)&&v<0){i.value=Math.abs(v);count++}});if(count>0)alert('Corregidos '+count+' negativos.');else alert('No hay negativos.')},!1,null,"#a35a5a","Convierte stock negativo en positivo"));
     
-    // NEW REGEX OR SEARCH BUTTON
-    o.appendChild(v("BUSCADOR REGEX (OR)","#e9ecef",()=>{try{var j=window.$||window.jQuery;if(!j||!j.fn.dataTable){alert('jQuery/DataTables no encontrado.');return;}var dt=j('#tbl_resultado').DataTable();var inp=j('#dt-search-0');if(!inp.length){alert('Input de búsqueda no encontrado.');return;}inp.off();inp.on('input',function(){dt.search(this.value,true,false).draw();});alert('¡Búsqueda Regex activada! Pruebe escribir: EMITIDA|VALIDADA');}catch(e){alert('Error: '+e.message);}},!1,null,"#495057","e.g. para filtrar por cirugia|UAI encuentra todas las recetas de ambos"));
+    o.appendChild(v("BUSCADOR REGEX (OR)","#e9ecef",()=>{
+        if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; }
+    },!1,null,"#495057","Abre menú para filtrar las DataTables por Servicio Solicitante"));
 
     const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
@@ -365,9 +411,7 @@
                     const theadTr = table.querySelector('thead tr');
                     if(theadTr && !theadTr.querySelector('.sam-th-cb')){
                         const th = document.createElement('th');
-                        th.className = 'sam-th-cb';
-                        th.innerText = 'Sel.';
-                        th.style.cssText = 'text-align:center;width:40px;';
+                        th.className = 'sam-th-cb'; th.innerText = 'Sel.'; th.style.cssText = 'text-align:center;width:40px;';
                         theadTr.appendChild(th);
                     }
                 }
