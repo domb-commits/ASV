@@ -311,6 +311,9 @@
     o.appendChild(sep);
 
     o.appendChild(v("FIX STOCK NEGATIVO","#fde2e4",()=>{var h=document.querySelectorAll('input[type=\"hidden\"][id^=\"txt_disponible_\"]');var count=0;h.forEach(function(i){var v=parseFloat(i.value);if(!isNaN(v)&&v<0){i.value=Math.abs(v);count++}});if(count>0)alert('Corregidos '+count+' negativos.');else alert('No hay negativos.')},!1,null,"#a35a5a","Convierte stock negativo en positivo"));
+    
+    // NEW REGEX OR SEARCH BUTTON
+    o.appendChild(v("BUSCADOR REGEX (OR)","#e9ecef",()=>{try{var j=window.$||window.jQuery;if(!j||!j.fn.dataTable){alert('jQuery/DataTables no encontrado.');return;}var dt=j('#tbl_resultado').DataTable();var inp=j('#dt-search-0');if(!inp.length){alert('Input de búsqueda no encontrado.');return;}inp.off();inp.on('input',function(){dt.search(this.value,true,false).draw();});alert('¡Búsqueda Regex activada! Pruebe escribir: EMITIDA|VALIDADA');}catch(e){alert('Error: '+e.message);}},!1,null,"#495057","e.g. para filtrar por cirugia|UAI encuentra todas las recetas de ambos"));
 
     const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
