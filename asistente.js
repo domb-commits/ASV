@@ -1,7 +1,7 @@
 (function(){
     if(document.getElementById("custom-floating-menu")) return;
 
-    // Cache the initial jQuery instance immediately to prevent AJAX updates from clobbering it
+    // Cache the initial jQuery instance for DataTables to prevent AJAX clobbering
     const _baseJQuery = window.$ || window.jQuery;
 
     // =========================================================================
@@ -232,7 +232,7 @@
     let dt_instance = null;
     const initRegexAndPopulate = () => {
         try {
-            // Self-healing: prioritize our cached copy of the initial jQuery object
+            // Self-healing: prioritize our cached copy of the initial jQuery object for DataTables
             var j = _baseJQuery || window.$ || window.jQuery;
             if(!j || !j.fn.dataTable){ alert('jQuery/DataTables no encontrado en el sistema.'); return false; }
             
@@ -314,10 +314,14 @@
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
     const multi = (t) => {
-        var j = _baseJQuery || window.$ || window.jQuery;
-        if(window._origVal) j.fn.val = window._origVal;
-        window._origVal = j.fn.val;
-        j.fn.val = function(e){
+        // Grab the *currently active* jQuery from the window right as the button is clicked
+        let activeJq = window.$ || window.jQuery;
+        if (!activeJq || !activeJq.fn) return;
+
+        if(window._origVal) activeJq.fn.val = window._origVal;
+        window._origVal = activeJq.fn.val;
+        
+        activeJq.fn.val = function(e){
             if(arguments.length > 0 && this.hasClass("class_valida") && !isNaN(parseFloat(e))){
                 let baseVal = parseFloat(e);
                 if (baseVal >= 1000) baseVal = Math.ceil(baseVal / 1000);
@@ -326,10 +330,15 @@
             }
             return window._origVal.apply(this,arguments);
         };
+
         document.querySelectorAll('[onclick*="txt_cantidad_qf_"]').forEach((e => {
             try { new Function(e.getAttribute('onclick'))(); } catch(err) {}
         }));
-        setTimeout(() => { j.fn.val = window._origVal; delete window._origVal; }, 100);
+
+        setTimeout(() => { 
+            if(window._origVal) activeJq.fn.val = window._origVal; 
+            delete window._origVal; 
+        }, 100);
     };
 
     o.appendChild(v("VALIDAR SUGERIDA","#f1f3f5",()=>multi(1),!1,null,"#495057","Copia la cantidad sugerida a la validada"));
