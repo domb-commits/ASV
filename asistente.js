@@ -44,11 +44,11 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN_";
+    t.innerText = "ASISTENTE DE VALIDACIÓN";
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -94,18 +94,18 @@
 
     // ALL SECONDARY VIEWS
     const p = document.createElement("div");
-    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
 
     const s_view = document.createElement("div");
-    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
 
     const n_view = document.createElement("div");
-    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
     n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(n_view);
 
     const d_view = document.createElement("div");
-    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
     d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(d_view);
 
@@ -147,81 +147,84 @@
     }
 
     // ==========================================
-    // DATA ANALYSIS ENGINE (UPDATED/ROBUST)
+    // DATA ANALYSIS ENGINE (STRICT CRITERIA)
     // ==========================================
     const analyzeTable = () => {
         const j = _baseJQuery || window.$ || window.jQuery;
         if (!j) return { newPatients: [], discharged: [] };
 
-        let patCol = -1, dateCol = -1, typeCol = -1;
-        j('#tbl_resultado thead th').each(function(i){
-            const txt = j(this).text().toUpperCase();
-            if(txt.includes('PACIENTE') || txt.includes('NOMBRE')) patCol = i;
-            if(txt.includes('FECHA')) dateCol = i;
-            if(txt.includes('TIPO') || txt.includes('ESTADO')) typeCol = i;
-        });
+        let dt = null;
+        try {
+            if (j.fn.dataTable && j('#tbl_resultado').length) {
+                dt = j('#tbl_resultado').DataTable();
+            }
+        } catch(err) {}
 
-        const rows = document.querySelectorAll("#tbl_resultado tbody tr");
+        const rows = dt ? dt.rows().nodes() : document.querySelectorAll("#tbl_resultado tbody tr");
         const patientData = {};
         const discharged = [];
-        let maxDateStr = "";
         let maxDateVal = 0;
 
+        // Parse date strings reliably by ignoring times
         const parseDate = (dStr) => {
-            let m = dStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-            if(m) return new Date(m[3], m[2]-1, m[1]).getTime();
+            if (!dStr) return 0;
+            let mD = dStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if(mD) return new Date(mD[3], mD[2]-1, mD[1]).getTime();
+            
+            let mY = dStr.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+            if(mY) return new Date(mY[1], mY[2]-1, mY[3]).getTime();
+            
             return 0;
         };
 
-        rows.forEach(tr => {
-            if(!tr.cells || tr.cells.length < 3) return;
+        j(rows).each(function() {
+            const tr = this;
+            if(!tr.cells || tr.cells.length < 9) return;
             
-            let patName = patCol !== -1 && tr.cells[patCol] ? tr.cells[patCol].innerText.trim() : "";
-            let dateStr = dateCol !== -1 && tr.cells[dateCol] ? tr.cells[dateCol].innerText.trim() : "";
-            
-            // Normalize cell extraction and match strings fluidly
-            let typeStr = typeCol !== -1 && tr.cells[typeCol] ? tr.cells[typeCol].innerText.toUpperCase() : "";
-            if (!typeStr) {
-                // Robust Fallback: Join all row contents if a rigid header match failed
-                typeStr = Array.from(tr.cells).map(c => c.innerText.toUpperCase()).join(" ");
-            }
-            
+            // Strictly adhering to specified explicit indices
+            // data-dt-column="1" -> Index 1 (Date)
+            // data-dt-column="8" -> Index 8 (Type/Status)
+            // Patient Name       -> Index 7 (Based on prior table specs)
+            let dateStr = tr.cells[1] ? tr.cells[1].innerText.trim() : "";
+            let patName = tr.cells[7] ? tr.cells[7].innerText.trim() : "";
+            let typeStr = tr.cells[8] ? tr.cells[8].innerText.replace(/\s+/g, " ").trim() : "";
             let btn = tr.querySelector('[onclick^="verDetalle"]');
 
             if(!patName) return;
 
-            let dayOnly = dateStr.split(" ")[0];
+            let pd = parseDate(dateStr);
+            if(pd > maxDateVal) maxDateVal = pd; // Track absolute max date in the data
 
-            if(!patientData[patName]) patientData[patName] = { dates: new Set(), btn: null };
-            if(dayOnly) patientData[patName].dates.add(dayOnly);
+            if(!patientData[patName]) {
+                patientData[patName] = { dates: new Set(), btn: null };
+            }
+            if(pd > 0) patientData[patName].dates.add(pd);
             
             if(btn && !patientData[patName].btn) patientData[patName].btn = btn;
 
-            // Checks universally for 'ALTA' anywhere inside the classification structure
-            if(typeStr.includes('ALTA')) {
+            // Strict discharge validation: Replace newlines with spaces and check inclusion
+            if(typeStr.toUpperCase().includes('HOSPITALIZADO ALTA')) {
                 if(!discharged.some(d => d.name === patName)) {
                     discharged.push({ name: patName, btn: btn });
                 }
             }
         });
 
-        // 1. Locate the absolute latest date visible in the table to act as "Today"
-        Object.values(patientData).forEach(p => {
-            p.dates.forEach(d => {
-                let pd = parseDate(d);
-                if(pd > maxDateVal) {
-                    maxDateVal = pd;
-                    maxDateStr = d;
-                }
-            });
-        });
-
-        // 2. Map patients whose ONLY dates perfectly match the maximum "latest day"
+        // Evaluate New Patients: No prescriptions strictly *prior* to max(date)
         const newPatients = [];
         for(let pat in patientData) {
             let data = patientData[pat];
-            if(data.dates.size === 1 && data.dates.has(maxDateStr)) {
-                newPatients.push({ name: pat, btn: data.btn });
+            if(data.dates.size > 0 && maxDateVal > 0) {
+                let hasPriorDate = false;
+                data.dates.forEach(pd => {
+                    if (pd < maxDateVal) {
+                        hasPriorDate = true;
+                    }
+                });
+                
+                if(!hasPriorDate) {
+                    newPatients.push({ name: pat, btn: data.btn });
+                }
             }
         }
 
@@ -339,7 +342,7 @@
                 rs();
             }
         };
-        document.getElementById('sam_back').onclick = () => { p.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_back').onclick = () => { p.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
         document.getElementById('sam_exp').onclick = () => { cp(btoa(JSON.stringify(sw))); };
         document.getElementById('sam_imp').onclick = () => {
             const code = prompt("Pegue el código de sincronización aquí:");
@@ -353,12 +356,12 @@
                 } catch(err) { alert("Código inválido."); }
             }
         };
-        document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; };
-        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; };
-        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
+        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
+        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
         
-        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; };
-        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; };
+        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
+        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
         rs();
     },100);
 
@@ -481,7 +484,7 @@
     // MENU ACTIONS ASSEMBLY (FILTROS AT THE TOP)
     // ==========================================
     o.appendChild(v("FILTROS","#d1ecf1",()=>{
-        if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; }
+        if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; }
     },!1,null,"#0c5460",null));
 
     let m_idx = -1;
@@ -561,7 +564,7 @@
     
     const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
-    rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
+    rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";e.style.width="340px";e.style.minWidth="340px";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
     o.appendChild(rowC);
 
