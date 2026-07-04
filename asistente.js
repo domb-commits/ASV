@@ -48,7 +48,7 @@
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN";
+    t.innerText = "ASISTENTE DE VALIDACIÓN__";
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -67,7 +67,7 @@
     document.onmouseup = () => r = !1;
 
     const o = document.createElement("div");
-    o.style.cssText = "padding:10px;display:flex;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    o.style.cssText = "padding:10px;display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
     e.appendChild(o);
 
     // ==========================================
@@ -92,20 +92,20 @@
     statsHeader.appendChild(discPatEl);
     o.appendChild(statsHeader);
 
-    // ALL SECONDARY VIEWS
+    // ALL SECONDARY VIEWS WITH FIXED WIDTH (100%)
     const p = document.createElement("div");
-    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
 
     const s_view = document.createElement("div");
-    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
 
     const n_view = document.createElement("div");
-    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
     n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(n_view);
 
     const d_view = document.createElement("div");
-    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
     d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(d_view);
 
@@ -147,7 +147,7 @@
     }
 
     // ==========================================
-    // DATA ANALYSIS ENGINE (STRICT CRITERIA)
+    // DATA ANALYSIS ENGINE (STRICT ATTRIBUTE EXTRACTION)
     // ==========================================
     const analyzeTable = () => {
         const j = _baseJQuery || window.$ || window.jQuery;
@@ -165,7 +165,6 @@
         const discharged = [];
         let maxDateVal = 0;
 
-        // Parse date strings reliably by ignoring times
         const parseDate = (dStr) => {
             if (!dStr) return 0;
             let mD = dStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
@@ -179,51 +178,56 @@
 
         j(rows).each(function() {
             const tr = this;
-            if(!tr.cells || tr.cells.length < 9) return;
             
-            // Strictly adhering to specified explicit indices
-            // data-dt-column="1" -> Index 1 (Date)
-            // data-dt-column="8" -> Index 8 (Type/Status)
-            // Patient Name       -> Index 7 (Based on prior table specs)
-            let dateStr = tr.cells[1] ? tr.cells[1].innerText.trim() : "";
-            let patName = tr.cells[7] ? tr.cells[7].innerText.trim() : "";
-            let typeStr = tr.cells[8] ? tr.cells[8].innerText.replace(/\s+/g, " ").trim() : "";
+            // Extract strictly via data-dt-column logic to circumvent all column shifts
+            let dateCell = tr.querySelector('td[data-dt-column="1"]') || tr.cells[1];
+            let fichaCell = tr.querySelector('td[data-dt-column="4"]') || tr.cells[4];
+            let statusCell = tr.querySelector('td[data-dt-column="8"]') || tr.cells[8];
+            
+            if(!dateCell || !fichaCell || !statusCell) return;
+
+            let dateStr = dateCell.innerText.trim();
+            let patFicha = fichaCell.innerText.trim();
+            // Replace newlines and extra spaces to handle HTML text formatting cleanly
+            let typeStr = statusCell.innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
+            
             let btn = tr.querySelector('[onclick^="verDetalle"]');
 
-            if(!patName) return;
+            if(!patFicha) return;
 
             let pd = parseDate(dateStr);
-            if(pd > maxDateVal) maxDateVal = pd; // Track absolute max date in the data
+            if(pd > maxDateVal) maxDateVal = pd; 
 
-            if(!patientData[patName]) {
-                patientData[patName] = { dates: new Set(), btn: null };
+            if(!patientData[patFicha]) {
+                patientData[patFicha] = { dates: new Set(), btn: null };
             }
-            if(pd > 0) patientData[patName].dates.add(pd);
+            if(pd > 0) patientData[patFicha].dates.add(pd);
             
-            if(btn && !patientData[patName].btn) patientData[patName].btn = btn;
+            if(btn && !patientData[patFicha].btn) patientData[patFicha].btn = btn;
 
-            // Strict discharge validation: Replace newlines with spaces and check inclusion
-            if(typeStr.toUpperCase().includes('HOSPITALIZADO ALTA')) {
-                if(!discharged.some(d => d.name === patName)) {
-                    discharged.push({ name: patName, btn: btn });
+            // Discharged criteria exactly as requested
+            if(typeStr === 'HOSPITALIZADO ALTA' || typeStr.includes('HOSPITALIZADO ALTA')) {
+                if(!discharged.some(d => d.name === patFicha)) {
+                    discharged.push({ name: patFicha, btn: btn });
                 }
             }
         });
 
-        // Evaluate New Patients: No prescriptions strictly *prior* to max(date)
+        // New Patients criteria: No dates found strictly prior to the max date
         const newPatients = [];
-        for(let pat in patientData) {
-            let data = patientData[pat];
+        for(let patFicha in patientData) {
+            let data = patientData[patFicha];
             if(data.dates.size > 0 && maxDateVal > 0) {
                 let hasPriorDate = false;
+                let hasMaxDate = false;
+                
                 data.dates.forEach(pd => {
-                    if (pd < maxDateVal) {
-                        hasPriorDate = true;
-                    }
+                    if (pd < maxDateVal) hasPriorDate = true;
+                    if (pd === maxDateVal) hasMaxDate = true;
                 });
                 
-                if(!hasPriorDate) {
-                    newPatients.push({ name: pat, btn: data.btn });
+                if(!hasPriorDate && hasMaxDate) {
+                    newPatients.push({ name: patFicha, btn: data.btn });
                 }
             }
         }
@@ -238,7 +242,6 @@
         newPatEl.innerText = `Pacientes nuevos: ${analysis.newPatients.length}`;
         discPatEl.innerText = `Pacientes de alta: ${analysis.discharged.length}`;
         
-        // Populate New Patients 
         const ulNew = document.getElementById('sam_new_ul');
         ulNew.innerHTML = '';
         if(analysis.newPatients.length === 0) {
@@ -246,8 +249,8 @@
         } else {
             analysis.newPatients.forEach(p => {
                 let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name}">${p.name}</span>`;
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="Ficha: ${p.name}">📄 Ficha: ${p.name}</span>`;
                 
                 let btn = document.createElement('button');
                 btn.innerText = "VER";
@@ -259,7 +262,6 @@
             });
         }
         
-        // Populate Discharged
         const ulDisc = document.getElementById('sam_disc_ul');
         ulDisc.innerHTML = '';
         if(analysis.discharged.length === 0) {
@@ -267,8 +269,8 @@
         } else {
             analysis.discharged.forEach(p => {
                 let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name}">${p.name}</span>`;
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="Ficha: ${p.name}">📄 Ficha: ${p.name}</span>`;
                 
                 let btn = document.createElement('button');
                 btn.innerText = "VER";
