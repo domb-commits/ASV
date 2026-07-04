@@ -70,11 +70,44 @@
     o.style.cssText = "padding:10px;display:flex;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
     e.appendChild(o);
 
+    // ==========================================
+    // PATIENT ANALYTICS HEADER
+    // ==========================================
+    const statsHeader = document.createElement("div");
+    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
+    
+    const newPatEl = document.createElement("div");
+    newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
+    newPatEl.innerText = "Pacientes nuevos: -";
+    newPatEl.onmouseenter = () => newPatEl.style.color = "#0056b3";
+    newPatEl.onmouseleave = () => newPatEl.style.color = "#0c5460";
+    
+    const discPatEl = document.createElement("div");
+    discPatEl.style.cssText = "color:#856404; cursor:pointer; text-decoration:underline; transition:0.2s;";
+    discPatEl.innerText = "Pacientes de alta: -";
+    discPatEl.onmouseenter = () => discPatEl.style.color = "#d39e00";
+    discPatEl.onmouseleave = () => discPatEl.style.color = "#856404";
+    
+    statsHeader.appendChild(newPatEl);
+    statsHeader.appendChild(discPatEl);
+    o.appendChild(statsHeader);
+
+    // ALL SECONDARY VIEWS
     const p = document.createElement("div");
     p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
 
     const s_view = document.createElement("div");
     s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+
+    const n_view = document.createElement("div");
+    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    e.appendChild(n_view);
+
+    const d_view = document.createElement("div");
+    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    e.appendChild(d_view);
 
     const prevent = (ev) => {
         ev.stopPropagation();
@@ -112,6 +145,135 @@
         r.onclick = n;
         return r;
     }
+
+    // ==========================================
+    // DATA ANALYSIS ENGINE
+    // ==========================================
+    const analyzeTable = () => {
+        const j = _baseJQuery || window.$ || window.jQuery;
+        if (!j) return { newPatients: [], discharged: [] };
+
+        let patCol = -1, dateCol = -1, typeCol = -1;
+        j('#tbl_resultado thead th').each(function(i){
+            const txt = j(this).text().toUpperCase();
+            if(txt.includes('PACIENTE') || txt.includes('NOMBRE')) patCol = i;
+            if(txt.includes('FECHA')) dateCol = i;
+            if(txt.includes('TIPO')) typeCol = i;
+        });
+
+        const rows = document.querySelectorAll("#tbl_resultado tbody tr");
+        const patientData = {};
+        const discharged = [];
+        let maxDateStr = "";
+        let maxDateVal = 0;
+
+        const parseDate = (dStr) => {
+            let m = dStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if(m) return new Date(m[3], m[2]-1, m[1]).getTime();
+            return 0;
+        };
+
+        rows.forEach(tr => {
+            if(!tr.cells || tr.cells.length < 3) return;
+            
+            let patName = patCol !== -1 && tr.cells[patCol] ? tr.cells[patCol].innerText.trim() : "";
+            let dateStr = dateCol !== -1 && tr.cells[dateCol] ? tr.cells[dateCol].innerText.trim() : "";
+            let typeStr = typeCol !== -1 && tr.cells[typeCol] ? tr.cells[typeCol].innerText.trim() : "";
+            let btn = tr.querySelector('[onclick^="verDetalle"]');
+
+            if(!patName) return;
+
+            let dayOnly = dateStr.split(" ")[0]; // Strip time to group purely by day
+
+            if(!patientData[patName]) patientData[patName] = { dates: new Set(), btn: null };
+            if(dayOnly) patientData[patName].dates.add(dayOnly);
+            
+            // Keep reference to the latest button to open
+            if(btn && !patientData[patName].btn) patientData[patName].btn = btn;
+
+            if(typeStr.toUpperCase().includes('HOSPITALIZADO ALTA')) {
+                if(!discharged.some(d => d.name === patName)) {
+                    discharged.push({ name: patName, btn: btn });
+                }
+            }
+        });
+
+        // 1. Locate the absolute latest date visible in the table to act as "Today"
+        Object.values(patientData).forEach(p => {
+            p.dates.forEach(d => {
+                let pd = parseDate(d);
+                if(pd > maxDateVal) {
+                    maxDateVal = pd;
+                    maxDateStr = d;
+                }
+            });
+        });
+
+        // 2. Map patients whose ONLY dates perfectly match the maximum "latest day"
+        const newPatients = [];
+        for(let pat in patientData) {
+            let data = patientData[pat];
+            if(data.dates.size === 1 && data.dates.has(maxDateStr)) {
+                newPatients.push({ name: pat, btn: data.btn });
+            }
+        }
+
+        return { newPatients, discharged };
+    };
+
+    const updatePatientStats = () => {
+        const analysis = analyzeTable();
+        if(!analysis) return;
+        
+        newPatEl.innerText = `Pacientes nuevos: ${analysis.newPatients.length}`;
+        discPatEl.innerText = `Pacientes de alta: ${analysis.discharged.length}`;
+        
+        // Populate New Patients 
+        const ulNew = document.getElementById('sam_new_ul');
+        ulNew.innerHTML = '';
+        if(analysis.newPatients.length === 0) {
+            ulNew.innerHTML = '<li style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay pacientes nuevos</li>';
+        } else {
+            analysis.newPatients.forEach(p => {
+                let li = document.createElement('li');
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name}">${p.name}</span>`;
+                
+                let btn = document.createElement('button');
+                btn.innerText = "VER";
+                btn.style.cssText = "padding:4px 6px;background:#d1ecf1;color:#0c5460;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
+                btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
+                
+                li.appendChild(btn);
+                ulNew.appendChild(li);
+            });
+        }
+        
+        // Populate Discharged
+        const ulDisc = document.getElementById('sam_disc_ul');
+        ulDisc.innerHTML = '';
+        if(analysis.discharged.length === 0) {
+            ulDisc.innerHTML = '<li style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay pacientes de alta</li>';
+        } else {
+            analysis.discharged.forEach(p => {
+                let li = document.createElement('li');
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name}">${p.name}</span>`;
+                
+                let btn = document.createElement('button');
+                btn.innerText = "VER";
+                btn.style.cssText = "padding:4px 6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
+                btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
+                
+                li.appendChild(btn);
+                ulDisc.appendChild(li);
+            });
+        }
+    };
+
+    // Keep numbers gently updated in background every 5 seconds
+    setInterval(updatePatientStats, 5000);
+    setTimeout(updatePatientStats, 500);
 
     let sw = JSON.parse(localStorage.getItem('sam_sw')||'[]');
     const rs = () => {
@@ -185,6 +347,11 @@
             }
         };
         document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; };
+        
+        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; };
+        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; };
         rs();
     },100);
 
@@ -235,13 +402,10 @@
     let dt_instance = null;
     const initRegexAndPopulate = () => {
         try {
-            // Self-healing: prioritize our cached copy of the initial jQuery object for DataTables
             var j = _baseJQuery || window.$ || window.jQuery;
             if(!j || !j.fn.dataTable){ alert('jQuery/DataTables no encontrado en el sistema.'); return false; }
             
             dt_instance = j('#tbl_resultado').DataTable();
-            
-            // Re-evaluating fallback targets if dataTables filter inputs alter names/IDs after redraw
             var inp = j('#dt-search-0').length ? j('#dt-search-0') : j('.dataTables_filter input, input[type="search"]').first();
             if(!inp.length){ alert('Input de búsqueda no encontrado.'); return false; }
             
@@ -317,7 +481,6 @@
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
     const multi = (t) => {
-        // Grab the *currently active* jQuery from the window right as the button is clicked
         let activeJq = window.$ || window.jQuery;
         if (!activeJq || !activeJq.fn) return;
 
