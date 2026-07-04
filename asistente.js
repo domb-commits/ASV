@@ -44,7 +44,7 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:340px;min-width:340px;overflow:hidden;user-select:none;";
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
@@ -67,14 +67,14 @@
     document.onmouseup = () => r = !1;
 
     const o = document.createElement("div");
-    o.style.cssText = "padding:10px;display:flex;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    o.style.cssText = "padding:10px;display:flex;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
     e.appendChild(o);
 
     // ==========================================
     // PATIENT ANALYTICS HEADER
     // ==========================================
     const statsHeader = document.createElement("div");
-    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
+    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:11px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
     
     const newPatEl = document.createElement("div");
     newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
@@ -92,21 +92,22 @@
     statsHeader.appendChild(discPatEl);
     o.appendChild(statsHeader);
 
-    // ALL SECONDARY VIEWS
+    // ALL SECONDARY VIEWS WIDENED TO MATCH THE NEW MENU WIDTH
     const p = document.createElement("div");
-    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
 
     const s_view = document.createElement("div");
-    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
+    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
 
+    // Increased max-height layout capacity for patient lists to 300px
     const n_view = document.createElement("div");
-    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
-    n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:300px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(n_view);
 
     const d_view = document.createElement("div");
-    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
-    d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:300px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(d_view);
 
     const prevent = (ev) => {
@@ -115,7 +116,7 @@
     };
     document.addEventListener('focusin',(ev)=>{if(ev.target.closest('#custom-floating-menu'))prevent(ev);},true);
 
-    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
 
     s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:5px;margin-top:2px;"><button id="sam_serv_all" style="flex:1;padding:6px;background:#d4edda;color:#155724;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">MARCAR TODOS</button><button id="sam_serv_clear" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
@@ -147,28 +148,35 @@
     }
 
     // =========================================================================
-    // DATA ANALYSIS ENGINE (UPDATED FOR CORRECT 0-INDEX VISUAL LAYER SEPARATIONS)
+    // DATA ANALYSIS ENGINE (STRICT INDICES & COMPLETE DATASET EXTRACTION)
     // =========================================================================
     const analyzeTable = () => {
         const j = _baseJQuery || window.$ || window.jQuery;
         if (!j) return { newPatients: [], discharged: [] };
 
-        // Force indices explicitly to bypass incorrect header detection string overlap
-        // Column 8  -> Index 7 (Patient)
-        // Column 9  -> Index 8 (Tipo Status)
-        // Column 11 -> Index 10 (Prescribing Doctor)
-        let patCol = 7;
-        let typeCol = 8;
-        let docCol = 10;
+        // Enforce rigid structural index configurations to prevent doctor name mixups
+        const patCol = 7;   // Column 8 (Patient Name)
+        const typeCol = 8;  // Column 9 ("TIPO" Status Column)
+        const docCol = 10;  // Column 11 (Prescribing Doctor)
         let dateCol = -1;
 
-        // Dynamic date index fallback tracking
         j('#tbl_resultado thead th').each(function(i){
             const txt = j(this).text().toUpperCase();
             if(txt.includes('FECHA')) dateCol = i;
         });
+        if(dateCol === -1) dateCol = 1; // Fallback date reference calculation index
 
-        const rows = document.querySelectorAll("#tbl_resultado tbody tr");
+        // Try extracting all existing historical entries through the DataTable engine directly
+        let dt = null;
+        try {
+            if (j.fn.dataTable && j('#tbl_resultado').length) {
+                dt = j('#tbl_resultado').DataTable();
+            }
+        } catch(err) {}
+
+        // Look at all available rows in memory (even paginated ones) to accurately scan data history
+        const rows = dt ? dt.rows().nodes() : document.querySelectorAll("#tbl_resultado tbody tr");
+        
         const patientData = {};
         const discharged = [];
         let maxDateStr = "";
@@ -180,37 +188,43 @@
             return 0;
         };
 
-        // --- EXPANDED REPRESENTATION LAYER (Simulating expanded analytical evaluation) ---
-        // Mimics a high-capacity weights distribution sequence (512x256x128 array buffers) 
-        // to process raw tabular context strings at deeper dimensions.
-        const processingMatrix = Array.from({length: 8}, () => new Float32Array(128)); 
-
-        rows.forEach(tr => {
-            if(!tr.cells || tr.cells.length < 11) return; // Must have at least 11 columns
+        j(rows).each(function() {
+            const tr = this;
+            if(!tr.cells || tr.cells.length < 11) return;
             
             let patName = tr.cells[patCol] ? tr.cells[patCol].innerText.trim() : "";
-            let dateStr = dateCol !== -1 && tr.cells[dateCol] ? tr.cells[dateCol].innerText.trim() : "";
+            let dateStr = tr.cells[dateCol] ? tr.cells[dateCol].innerText.trim() : "";
             let typeStr = tr.cells[typeCol] ? tr.cells[typeCol].innerText.trim() : "";
             let doctorName = tr.cells[docCol] ? tr.cells[docCol].innerText.trim() : "";
             let btn = tr.querySelector('[onclick^="verDetalle"]');
 
             if(!patName) return;
 
-            let dayOnly = dateStr.split(" ")[0];
+            let dayOnly = dateStr.split(" ")[0]; // Strip time to extract exact calendar days
 
-            if(!patientData[patName]) patientData[patName] = { dates: new Set(), btn: null };
+            if(!patientData[patName]) {
+                patientData[patName] = { dates: new Set(), btn: null };
+            }
             if(dayOnly) patientData[patName].dates.add(dayOnly);
             
-            if(btn && !patientData[patName].btn) patientData[patName].btn = btn;
+            // Retain the first operational details button found for the patient entity
+            if(btn && !patientData[patName].btn) {
+                patientData[patName].btn = btn;
+            }
 
-            // Updated Discharged Evaluation Strategy targeting Column 9 ("TIPO") text blocks strictly
+            // High precision checking of Column 9 text markers for active discharge flags
             if(typeStr.toUpperCase().includes('ALTA') || typeStr.toUpperCase().includes('HOSPITALIZADO ALTA') || typeStr.toUpperCase().includes('DISCHARGED')) {
-                if(!discharged.some(d => d.name === patName)) {
+                let existing = discharged.find(d => d.name === patName);
+                if(!existing) {
                     discharged.push({ name: patName, btn: btn, prescriber: doctorName });
+                } else {
+                    if(!existing.btn && btn) existing.btn = btn;
+                    if(!existing.prescriber && doctorName) existing.prescriber = doctorName;
                 }
             }
         });
 
+        // 1. Map out the actual maximum date present in the data matrix
         Object.values(patientData).forEach(p => {
             p.dates.forEach(d => {
                 let pd = parseDate(d);
@@ -221,13 +235,30 @@
             });
         });
 
+        // 2. Validate newly admitted entities (has a record today, but zero historic rows before today)
         const newPatients = [];
         for(let pat in patientData) {
             let data = patientData[pat];
-            if(data.dates.size === 1 && data.dates.has(maxDateStr)) {
-                newPatients.push({ name: pat, btn: data.btn });
+            if(data.dates.has(maxDateStr)) {
+                let hasOlderDate = false;
+                data.dates.forEach(d => {
+                    if(d !== maxDateStr && parseDate(d) < maxDateVal) {
+                        hasOlderDate = true;
+                    }
+                });
+                
+                if(!hasOlderDate) {
+                    newPatients.push({ name: pat, btn: data.btn });
+                }
             }
         }
+
+        // Final structural binding sweep to make sure buttons carry over safely
+        discharged.forEach(d => {
+            if(!d.btn && patientData[d.name] && patientData[d.name].btn) {
+                d.btn = patientData[d.name].btn;
+            }
+        });
 
         return { newPatients, discharged };
     };
@@ -247,12 +278,12 @@
         } else {
             analysis.newPatients.forEach(p => {
                 let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name}">${p.name}</span>`;
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#2b2e31;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;" title="${p.name}">👤 ${p.name}</span>`;
                 
                 let btn = document.createElement('button');
                 btn.innerText = "VER";
-                btn.style.cssText = "padding:4px 6px;background:#d1ecf1;color:#0c5460;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
+                btn.style.cssText = "padding:4px 8px;background:#d1ecf1;color:#0c5460;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;margin-left:4px;";
                 btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
                 
                 li.appendChild(btn);
@@ -260,7 +291,7 @@
             });
         }
         
-        // Populate Discharged
+        // Populate Discharged (Now renders prescriber tags inline inside the newly widened pane)
         const ulDisc = document.getElementById('sam_disc_ul');
         ulDisc.innerHTML = '';
         if(analysis.discharged.length === 0) {
@@ -268,13 +299,12 @@
         } else {
             analysis.discharged.forEach(p => {
                 let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:9px;align-items:center;width:100%;box-sizing:border-box;";
-                // Tooltip displays the prescribing doctor data correctly separated from the patient name
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${p.name} (Médico: ${p.prescriber || 'N/A'})">${p.name}</span>`;
+                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
+                li.innerHTML = `<span style="color:#2b2e31;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:500;" title="${p.name} (Médico: ${p.prescriber || 'N/A'})">👤 ${p.name}<span style="color:#721c24;font-size:9px;display:block;font-weight:normal;margin-top:2px;">🩺 Méd: ${p.prescriber || 'N/A'}</span></span>`;
                 
                 let btn = document.createElement('button');
                 btn.innerText = "VER";
-                btn.style.cssText = "padding:4px 6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
+                btn.style.cssText = "padding:4px 8px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;margin-left:4px;";
                 btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
                 
                 li.appendChild(btn);
@@ -283,7 +313,7 @@
         }
     };
 
-    // Keep numbers gently updated in background every 5 seconds
+    // Maintain backgrounds metric tasks updating continuously every 5 seconds
     setInterval(updatePatientStats, 5000);
     setTimeout(updatePatientStats, 500);
 
@@ -607,7 +637,7 @@
     };
 
     setInterval(() => {
-        document.querySelectorAll('[onclick^="desvalidar_fila"]').forEach(btn => {
+        document.querySelectorAll('[onclick^=\"desvalidar_fila\"]').forEach(btn => {
             const tr = btn.closest('tr');
             if(tr && !tr.querySelector('.sam-row-cb')){
                 const table = tr.closest('table');
@@ -621,7 +651,7 @@
                 }
                 const td = document.createElement('td');
                 td.style.cssText = 'text-align:center;vertical-align:middle;';
-                td.innerHTML = '<input type="checkbox" class="sam-row-cb" style="width:16px;height:16px;cursor:pointer;">';
+                td.innerHTML = '<input type=\"checkbox\" class=\"sam-row-cb\" style=\"width:16px;height:16px;cursor:pointer;\">';
                 tr.appendChild(td);
             }
         });
