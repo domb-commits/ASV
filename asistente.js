@@ -44,11 +44,11 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;";
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN";
+    t.innerText = "ASISTENTE DE VALIDACIÓN_";
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -92,20 +92,20 @@
     statsHeader.appendChild(discPatEl);
     o.appendChild(statsHeader);
 
-    // ALL SECONDARY VIEWS (WITH 340px INCREASED SUBMENU WIDTH)
+    // ALL SECONDARY VIEWS
     const p = document.createElement("div");
-    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
 
     const s_view = document.createElement("div");
-    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
 
     const n_view = document.createElement("div");
-    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
     n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(n_view);
 
     const d_view = document.createElement("div");
-    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:340px;box-sizing:border-box;";
+    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:260px;box-sizing:border-box;";
     d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(d_view);
 
@@ -147,30 +147,19 @@
     }
 
     // ==========================================
-    // DATA ANALYSIS ENGINE
+    // DATA ANALYSIS ENGINE (UPDATED/ROBUST)
     // ==========================================
     const analyzeTable = () => {
         const j = _baseJQuery || window.$ || window.jQuery;
         if (!j) return { newPatients: [], discharged: [] };
 
         let patCol = -1, dateCol = -1, typeCol = -1;
-
-        // First Pass: Match strict headers explicitly to prevent cross-contamination
         j('#tbl_resultado thead th').each(function(i){
-            const txt = j(this).text().toUpperCase().trim();
-            if(txt === 'NOMBRE PACIENTE') patCol = i;
-            if(txt === 'FECHA PRESCRIPCIÓN' || txt === 'FECHA PRESCRIPCION') dateCol = i;
-            if(txt.includes('TIPO')) typeCol = i;
+            const txt = j(this).text().toUpperCase();
+            if(txt.includes('PACIENTE') || txt.includes('NOMBRE')) patCol = i;
+            if(txt.includes('FECHA')) dateCol = i;
+            if(txt.includes('TIPO') || txt.includes('ESTADO')) typeCol = i;
         });
-
-        // Second Pass: Safe fallbacks if specific clean headers were missing
-        if (patCol === -1 || dateCol === -1) {
-            j('#tbl_resultado thead th').each(function(i){
-                const txt = j(this).text().toUpperCase().trim();
-                if(patCol === -1 && (txt.includes('PACIENTE') || txt.includes('NOMBRE')) && !txt.includes('PROFESIONAL')) patCol = i;
-                if(dateCol === -1 && txt.includes('FECHA') && !txt.includes('ENTREGA')) dateCol = i;
-            });
-        }
 
         const rows = document.querySelectorAll("#tbl_resultado tbody tr");
         const patientData = {};
@@ -189,20 +178,27 @@
             
             let patName = patCol !== -1 && tr.cells[patCol] ? tr.cells[patCol].innerText.trim() : "";
             let dateStr = dateCol !== -1 && tr.cells[dateCol] ? tr.cells[dateCol].innerText.trim() : "";
-            let typeStr = typeCol !== -1 && tr.cells[typeCol] ? tr.cells[typeCol].innerText.trim() : "";
+            
+            // Normalize cell extraction and match strings fluidly
+            let typeStr = typeCol !== -1 && tr.cells[typeCol] ? tr.cells[typeCol].innerText.toUpperCase() : "";
+            if (!typeStr) {
+                // Robust Fallback: Join all row contents if a rigid header match failed
+                typeStr = Array.from(tr.cells).map(c => c.innerText.toUpperCase()).join(" ");
+            }
+            
             let btn = tr.querySelector('[onclick^="verDetalle"]');
 
             if(!patName) return;
 
-            let dayOnly = dateStr.split(" ")[0]; // Strip time to group purely by day
+            let dayOnly = dateStr.split(" ")[0];
 
             if(!patientData[patName]) patientData[patName] = { dates: new Set(), btn: null };
             if(dayOnly) patientData[patName].dates.add(dayOnly);
             
-            // Keep reference to the latest button to open
             if(btn && !patientData[patName].btn) patientData[patName].btn = btn;
 
-            if(typeStr.toUpperCase().includes('HOSPITALIZADO ALTA')) {
+            // Checks universally for 'ALTA' anywhere inside the classification structure
+            if(typeStr.includes('ALTA')) {
                 if(!discharged.some(d => d.name === patName)) {
                     discharged.push({ name: patName, btn: btn });
                 }
@@ -343,7 +339,7 @@
                 rs();
             }
         };
-        document.getElementById('sam_back').onclick = () => { p.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
+        document.getElementById('sam_back').onclick = () => { p.style.display = "none"; o.style.display = "flex"; };
         document.getElementById('sam_exp').onclick = () => { cp(btoa(JSON.stringify(sw))); };
         document.getElementById('sam_imp').onclick = () => {
             const code = prompt("Pegue el código de sincronización aquí:");
@@ -357,12 +353,12 @@
                 } catch(err) { alert("Código inválido."); }
             }
         };
-        document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
-        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
-        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
+        document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; };
+        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; };
         
-        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
-        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
+        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; };
+        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; };
         rs();
     },100);
 
@@ -485,7 +481,7 @@
     // MENU ACTIONS ASSEMBLY (FILTROS AT THE TOP)
     // ==========================================
     o.appendChild(v("FILTROS","#d1ecf1",()=>{
-        if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; }
+        if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; }
     },!1,null,"#0c5460",null));
 
     let m_idx = -1;
@@ -540,7 +536,7 @@
     rowR.appendChild(v("RECHAZAR (DUP)","#f8d7da",()=>rej(4,"Duplicada",!0),!1,"1","#721c24","Rechazo rápido por duplicidad"));
     rowR.appendChild(v("RECHAZAR (EXP)","#fff3cd",()=>rej(10,"Vigencia expirada",!0),!1,"1","#856404","Rechazo rápido por receta expirada"));
     o.appendChild(rowR);
-    o.appendChild(v("REABRIR PARA EDITAR","#e2e3e5",()=>rej(1,"Reapertura por corrections",!1),!1,null,"#383d41","Reabre la receta sin cerrar la ventana"));
+    o.appendChild(v("REABRIR PARA EDITAR","#e2e3e5",()=>rej(1,"Reapertura por corrección",!1),!1,null,"#383d41","Reabre la receta sin cerrar la ventana"));
 
     const sep2 = document.createElement("div");
     sep2.className = "sam-separator";
@@ -565,7 +561,7 @@
     
     const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
-    rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";e.style.width="340px";e.style.minWidth="340px";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
+    rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
     o.appendChild(rowC);
 
