@@ -74,7 +74,7 @@
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN__";
+    t.innerText = "ASISTENTE DE VALIDACIÓN_t";
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
