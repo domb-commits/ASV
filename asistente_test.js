@@ -100,7 +100,7 @@
 
     const t = document.createElement("div");
     t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN_t";
+    t.innerText = "ASISTENTE DE VALIDACIÓN__";
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -144,7 +144,6 @@
     statsHeader.appendChild(discPatEl);
     o.appendChild(statsHeader);
 
-    // ALL SECONDARY VIEWS WITH FIXED WIDTH (100%)
     const p = document.createElement("div");
     p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
 
@@ -212,7 +211,7 @@
                 let tr = sel.closest('tr');
                 if (tr) {
                     let inp = tr.querySelector('input[id^="txt_cantidad_qf_"]');
-                    if (inp) {
+                    if (inp && inp.value !== "1") {
                         inp.value = "1";
                         if (window.jQuery) window.jQuery(inp).trigger('change');
                     }
@@ -221,8 +220,21 @@
         });
     };
 
+    // Global listener to immediately clamp values whenever dropdowns or inputs change natively
+    document.addEventListener('change', (ev) => {
+        if (ev.target && ev.target.matches && ev.target.matches('select[id^="cbo_farmaco_"], input[id^="txt_cantidad_qf_"]')) {
+            enforceSingleUnits();
+        }
+    }, true);
+
+    document.addEventListener('input', (ev) => {
+        if (ev.target && ev.target.matches && ev.target.matches('input[id^="txt_cantidad_qf_"]')) {
+            enforceSingleUnits();
+        }
+    }, true);
+
     // ==========================================
-    // DATA ANALYSIS ENGINE (STRICT ATTRIBUTE EXTRACTION)
+    // DATA ANALYSIS ENGINE
     // ==========================================
     const analyzeTable = () => {
         const j = _baseJQuery || window.$ || window.jQuery;
@@ -557,7 +569,7 @@
     };
 
     // ==========================================
-    // MENU ACTIONS ASSEMBLY (FILTROS AT THE TOP)
+    // MENU ACTIONS ASSEMBLY
     // ==========================================
     o.appendChild(v("FILTROS","#d1ecf1",()=>{
         if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; }
@@ -566,6 +578,7 @@
     let m_idx = -1;
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
+    // Multiplier logic hooked directly into jQuery.fn.val insertion
     const multi = (t) => {
         let activeJq = window.$ || window.jQuery;
         if (!activeJq || !activeJq.fn) return;
@@ -575,6 +588,22 @@
         
         activeJq.fn.val = function(e){
             if(arguments.length > 0 && this.hasClass("class_valida") && !isNaN(parseFloat(e))){
+                // Force single unit check AT THE EXACT MOMENT of value insertion
+                let isSingleUnit = false;
+                let tr = this.closest('tr');
+                if (tr.length) {
+                    let sel = tr.find('select[id^="cbo_farmaco_"]')[0];
+                    if (sel) {
+                        let text = sel.options[sel.selectedIndex]?.text || "";
+                        let val = sel.value || "";
+                        isSingleUnit = SINGLE_UNIT_MEDS.some(code => text.includes(code) || val.includes(code));
+                    }
+                }
+
+                if (isSingleUnit) {
+                    return window._origVal.call(this, 1);
+                }
+
                 let baseVal = parseFloat(e);
                 if (baseVal >= 1000) baseVal = Math.ceil(baseVal / 1000);
                 else if (baseVal >= 100) baseVal = 1;
@@ -605,8 +634,8 @@
     rowM.appendChild(v("X 4D","#f8f9fa",()=>multi(4),!1,"1","#495057","Multiplica dosis sugerida por 4"));
     o.appendChild(rowM);
 
-    o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
-    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
+    o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();enforceSingleUnits();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
+    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();enforceSingleUnits();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
     o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
     o.appendChild(v("LIMPIAR ENTREGAS (0)","#fff3cd",()=>{document.querySelectorAll('input').forEach(e=>{if(/^txt_lote_cantidad_\d+_\d+$/.test(e.id)){e.value="0";if(window.jQuery)window.jQuery(e).trigger("change");}})},!1,null,"#856404","Deja todas las cantidades de entrega en 0"));
 
