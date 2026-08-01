@@ -74,6 +74,7 @@
 				"109-0021",
 				"777-0053",
 				"101-0197",
+				"102-0005",
 				"103-0015",
 				"111-0055",
 				"101-0191",
@@ -256,18 +257,7 @@
         });
     };
 
-    // Global listener to immediately clamp values whenever dropdowns or inputs change natively
-    document.addEventListener('change', (ev) => {
-        if (ev.target && ev.target.matches && ev.target.matches('select[id^="cbo_farmaco_"], input[id^="txt_cantidad_qf_"]')) {
-            enforceSingleUnits();
-        }
-    }, true);
-
-    document.addEventListener('input', (ev) => {
-        if (ev.target && ev.target.matches && ev.target.matches('input[id^="txt_cantidad_qf_"]')) {
-            enforceSingleUnits();
-        }
-    }, true);
+    // Removed the global event listeners for native changes/inputs here
 
     // ==========================================
     // DATA ANALYSIS ENGINE
