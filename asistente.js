@@ -1,7 +1,7 @@
 (function(){
     if(document.getElementById("custom-floating-menu")) return;
 
-    // Cache the initial jQuery instance for DataTables to prevent AJAX clobbering
+    // Cache the initial jQuery instance for DataTables
     const _baseJQuery = window.$ || window.jQuery;
 
     // =========================================================================
@@ -12,118 +12,38 @@
         { o: "102-0026", d: "102-0027" },
         { o: "777-0061", d: "107-0003" },
         { o: "101-0164", d: "101-0154" },
-     // { o: "102-0035", d: "102-0012" },
         { o: "118-0010", d: "777-0079" },
         { o: "111-0089", d: "111-0016" },
         { o: "118-0011", d: "777-0123" },
         { o: "777-0232", d: "777-0220" },
         { o: "101-0180", d: "101-0181" },
-     // { o: "777-0160", d: "116-0109" },
         { o: "101-0187", d: "101-0126" },
         { o: "101-0185", d: "101-0039" },
         { o: "117-0079", d: "117-0007" },
         { o: "102-0005", d: "102-0034" },
-     // { o: "777-0058", d: "211-0012" },
         { o: "202-0627", d: "202-0001" },
         { o: "105-0132", d: "105-0005" },
         { o: "101-0023", d: "101-0173" },
         { o: "114-0016", d: "114-0065" },
         { o: "103-0022", d: "103-0019" },
-     // { o: "102-0036", d: "102-0029" },
         { o: "101-0212", d: "101-0213" }
     ];
 
     // =========================================================================
-    // SINGLE UNIT MEDICATION CODES (ORAL SOLUTIONS, EYE DROPS, SYRUPS, ETC.)
+    // SINGLE UNIT MEDICATION CODES
     // =========================================================================
     const SINGLE_UNIT_MEDS = [
-				"202-0416",
-				"202-0001",
-				"111-0059",
-				"111-0029",
-				"111-0023",
-				"111-0074",
-				"111-0026",
-				"111-0027",
-				"111-0038",
-				"111-0025",
-				"118-0003",
-				"118-0062",
-				"118-0054",
-				"118-0011",
-				"117-0064",
-				"115-0019",
-				"115-0004",
-				"115-0020",
-				"115-0009",
-				"112-0019",
-				"115-0008",
-				"119-0050",
-				"112-0009",
-				"115-0013",
-				"112-0022",
-				"101-0031",
-				"105-0130",
-				"105-0002",
-				"105-0020",
-				"105-0131",
-				"103-0013",
-				"103-0017",
-				"117-0009",
-				"103-0016",
-				"109-0021",
-				"777-0053",
-				"101-0197",
-				"102-0005",
-				"103-0015",
-				"111-0055",
-				"101-0191",
-				"117-0014",
-				"114-0016",
-				"114-0065",
-				"114-0044",
-				"777-0154",
-				"118-0010",
-				"105-0034",
-				"777-0052",
-				"777-0062",
-				"209-0086",
-				"777-0079",
-				"777-0123",
-				"777-0154",
-				"777-0044",
-				"777-0050",
-				"777-0236",
-				"777-0057",
-				"777-0068",
-				"777-0167",
-				"777-0020",
-				"777-0052",
-				"777-0046",
-				"777-0053",
-				"777-0234",
-				"777-0062",
-				"777-0135",
-				"777-0012",
-				"777-0259",
-				"777-0061",
-				"777-0059",
-				"777-0070",
-				"777-0072",
-				"777-0074",
-				"777-0160",
-				"102-0036",
-				"105-0018",
-				"102-0029",
-				"116-0030",
-				"114-0005",
-				"777-0109",
-				"103-0022",
-				"114-0067",
-				"112-0010",
-				"113-0002",
-				"113-0050",
-				"116-0109"
+				"202-0416","202-0001","111-0059","111-0029","111-0023","111-0074","111-0026","111-0027",
+				"111-0038","111-0025","118-0003","118-0062","118-0054","118-0011","117-0064","115-0019",
+				"115-0004","115-0020","115-0009","112-0019","115-0008","119-0050","112-0009","115-0013",
+				"112-0022","101-0031","105-0130","105-0002","105-0020","105-0131","103-0013","103-0017",
+				"117-0009","103-0016","109-0021","777-0053","101-0197","103-0015","111-0055","101-0191",
+				"117-0014","114-0016","114-0065","114-0044","777-0154","118-0010","105-0034","777-0052",
+				"777-0062","209-0086","777-0079","777-0123","777-0154","777-0044","777-0050","777-0236",
+				"777-0057","777-0068","777-0167","777-0020","777-0052","777-0046","777-0053","777-0234",
+				"777-0062","777-0135","777-0012","777-0259","777-0061","777-0059","777-0070","777-0072",
+				"777-0074","777-0160","102-0036","105-0018","102-0029","116-0030","114-0005","777-0109",
+				"103-0022","116-0109"
     ];
     // =========================================================================
 
@@ -237,31 +157,6 @@
         r.onclick = n;
         return r;
     }
-
-    // ==========================================
-    // SINGLE UNIT ENFORCEMENT ENGINE
-    // ==========================================
-    const enforceSingleUnits = () => {
-        if (!SINGLE_UNIT_MEDS.length) return;
-        document.querySelectorAll('select[id^="cbo_farmaco_"]').forEach(sel => {
-            let t = sel.options[sel.selectedIndex]?.text || "";
-            let v = sel.value || "";
-            let isSingleUnit = SINGLE_UNIT_MEDS.some(code => t.includes(code) || v.includes(code));
-            
-            if (isSingleUnit) {
-                let tr = sel.closest('tr');
-                if (tr) {
-                    let inp = tr.querySelector('input[id^="txt_cantidad_qf_"]');
-                    if (inp && inp.value !== "1") {
-                        inp.value = "1";
-                        if (window.jQuery) window.jQuery(inp).trigger('change');
-                    }
-                }
-            }
-        });
-    };
-
-    // Removed the global event listeners for native changes/inputs here
 
     // ==========================================
     // DATA ANALYSIS ENGINE
@@ -498,7 +393,6 @@
                 }
             });
         }
-        enforceSingleUnits();
     };
 
     const m_as = () => {
@@ -523,8 +417,7 @@
                 }
             });
         }
-        enforceSingleUnits();
-        alert(`Se aplicaron ${c} cambios por PA y se validó dosis única en ítems multidía.`);
+        alert(`Se aplicaron ${c} cambios por PA.`);
     };
 
     let dt_instance = null;
@@ -608,51 +501,50 @@
     let m_idx = -1;
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
-    // Multiplier logic hooked directly into jQuery.fn.val insertion
+    // ==========================================
+    // REWRITTEN MULTIPLIER AND SINGLE UNIT LOGIC
+    // COMPLETELY SAFE: Does not overwrite core system functions anymore
+    // ==========================================
     const multi = (t) => {
-        let activeJq = window.$ || window.jQuery;
-        if (!activeJq || !activeJq.fn) return;
+        // 1. Force the system to apply its native suggestions first
+        document.querySelectorAll('[onclick*="txt_cantidad_qf_"]').forEach((btn) => {
+            try { new Function(btn.getAttribute('onclick'))(); } catch(err) {}
+        });
 
-        if(window._origVal) activeJq.fn.val = window._origVal;
-        window._origVal = activeJq.fn.val;
-        
-        activeJq.fn.val = function(e){
-            if(arguments.length > 0 && this.hasClass("class_valida") && !isNaN(parseFloat(e))){
-                // Force single unit check AT THE EXACT MOMENT of value insertion
+        // 2. Wait 50 milliseconds for the system to finish inserting its numbers
+        setTimeout(() => {
+            document.querySelectorAll('input.class_valida').forEach(inp => {
+                let tr = inp.closest('tr');
+                if(!tr) return;
+
+                let sel = tr.querySelector('select[id^="cbo_farmaco_"]');
                 let isSingleUnit = false;
-                let tr = this.closest('tr');
-                if (tr.length) {
-                    let sel = tr.find('select[id^="cbo_farmaco_"]')[0];
-                    if (sel) {
-                        let text = sel.options[sel.selectedIndex]?.text || "";
-                        let val = sel.value || "";
-                        isSingleUnit = SINGLE_UNIT_MEDS.some(code => text.includes(code) || val.includes(code));
+
+                if(sel) {
+                    let text = sel.options[sel.selectedIndex]?.text || "";
+                    let val = sel.value || "";
+                    isSingleUnit = SINGLE_UNIT_MEDS.some(code => text.includes(code) || val.includes(code));
+                }
+
+                // If it's a single unit med, force it to 1 and stop
+                if(isSingleUnit) {
+                    inp.value = "1";
+                    if(window.jQuery) window.jQuery(inp).trigger('change');
+                } 
+                // If it's a normal med, apply math logic
+                else if(t !== 1) {
+                    let currentVal = parseFloat(inp.value);
+                    if(!isNaN(currentVal) && currentVal > 0) {
+                        let baseVal = currentVal;
+                        if (baseVal >= 1000) baseVal = Math.ceil(baseVal / 1000);
+                        else if (baseVal >= 100) baseVal = 1;
+                        
+                        inp.value = Math.round(baseVal * t).toString();
+                        if(window.jQuery) window.jQuery(inp).trigger('change');
                     }
                 }
-
-                if (isSingleUnit) {
-                    return window._origVal.call(this, 1);
-                }
-
-                let baseVal = parseFloat(e);
-                if (baseVal >= 1000) baseVal = Math.ceil(baseVal / 1000);
-                else if (baseVal >= 100) baseVal = 1;
-                return window._origVal.call(this, Math.round(baseVal * t));
-            }
-            return window._origVal.apply(this,arguments);
-        };
-
-        document.querySelectorAll('[onclick*="txt_cantidad_qf_"]').forEach((e => {
-            try { new Function(e.getAttribute('onclick'))(); } catch(err) {}
-        }));
-
-        enforceSingleUnits();
-
-        setTimeout(() => { 
-            enforceSingleUnits();
-            if(window._origVal) activeJq.fn.val = window._origVal; 
-            delete window._origVal; 
-        }, 100);
+            });
+        }, 50);
     };
 
     o.appendChild(v("VALIDAR SUGERIDA","#f1f3f5",()=>multi(1),!1,null,"#495057","Copia la cantidad sugerida a la validada"));
@@ -664,8 +556,8 @@
     rowM.appendChild(v("X 4D","#f8f9fa",()=>multi(4),!1,"1","#495057","Multiplica dosis sugerida por 4"));
     o.appendChild(rowM);
 
-    o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();enforceSingleUnits();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
-    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();enforceSingleUnits();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
+    o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
+    o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
     o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
     o.appendChild(v("LIMPIAR ENTREGAS (0)","#fff3cd",()=>{document.querySelectorAll('input').forEach(e=>{if(/^txt_lote_cantidad_\d+_\d+$/.test(e.id)){e.value="0";if(window.jQuery)window.jQuery(e).trigger("change");}})},!1,null,"#856404","Deja todas las cantidades de entrega en 0"));
 
