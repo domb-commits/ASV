@@ -532,7 +532,7 @@
                     if(window.jQuery) window.jQuery(inp).trigger('change');
                 } 
                 // If it's a normal med, apply math logic
-                else if(t !== 1) {
+                else {
                     let currentVal = parseFloat(inp.value);
                     if(!isNaN(currentVal) && currentVal > 0) {
                         let baseVal = currentVal;
