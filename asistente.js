@@ -46,6 +46,15 @@
 				"103-0022","116-0109", "112-0010"
     ];
     // =========================================================================
+	const PRESET_SERVICES = [
+    "AGUDO INDIFERENCIADO B",
+    "HOSPITAL DE DIA QUIRURGICO",
+    "CIRUGIA (BLOQUE QUIRURGICO)",
+    "LACTANTES",
+    "PSIQUIATRIA CORTA ESTADIA",
+    "UAI PEDIATRICO",
+    "URGENCIA"
+	];
 
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
@@ -130,7 +139,7 @@
     p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
 
-    s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:5px;margin-top:2px;"><button id="sam_serv_all" style="flex:1;padding:6px;background:#d4edda;color:#155724;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">MARCAR TODOS</button><button id="sam_serv_clear" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:4px;margin-top:2px;"><button id="sam_serv_all" style="flex:1;padding:6px 2px;background:#d4edda;color:#155724;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">MARCAR TODOS</button><button id="sam_serv_clear" style="flex:1;padding:6px 2px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button><button id="sam_serv_preset" style="flex:1;padding:6px 2px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">PREDEFINIDO</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(s_view);
 
     p.querySelectorAll('input').forEach(inp => {
@@ -483,6 +492,13 @@
                 document.querySelectorAll('.sam-srv-cb').forEach(cb => cb.checked = true);
                 updateSearch();
             };
+			document.getElementById('sam_serv_preset').onclick = () => {
+			    const presetSet = new Set(PRESET_SERVICES.map(s => s.trim().toUpperCase()));
+			    document.querySelectorAll('.sam-srv-cb').forEach(cb => {
+			        cb.checked = presetSet.has(cb.value.trim().toUpperCase());
+			    });
+			    updateSearch();
+			};
 
             return true;
         } catch(err) {
