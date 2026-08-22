@@ -120,16 +120,6 @@
     const s_view = document.createElement("div");
     s_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
 
-    const n_view = document.createElement("div");
-    n_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
-    n_view.innerHTML = `<div style="background:#d1ecf1;color:#0c5460;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #bee5eb;">PACIENTES NUEVOS</div><ul id="sam_new_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_new_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
-    e.appendChild(n_view);
-
-    const d_view = document.createElement("div");
-    d_view.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
-    d_view.innerHTML = `<div style="background:#fff3cd;color:#856404;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #ffeeba;">PACIENTES DE ALTA</div><ul id="sam_disc_ul" style="list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><button id="sam_disc_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
-    e.appendChild(d_view);
-
     const prevent = (ev) => {
         ev.stopPropagation();
         if(ev.type==='focusin'||ev.type==='keydown') ev.stopImmediatePropagation();
@@ -252,53 +242,34 @@
         return { newPatients, discharged };
     };
 
-    const updatePatientStats = () => {
-        const analysis = analyzeTable();
-        if(!analysis) return;
-        
-        newPatEl.innerText = `Pacientes nuevos: ${analysis.newPatients.length}`;
-        discPatEl.innerText = `Pacientes de alta: ${analysis.discharged.length}`;
-        
-        const ulNew = document.getElementById('sam_new_ul');
-        ulNew.innerHTML = '';
-        if(analysis.newPatients.length === 0) {
-            ulNew.innerHTML = '<li style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay pacientes nuevos</li>';
-        } else {
-            analysis.newPatients.forEach(p => {
-                let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="Ficha: ${p.name}">📄 Ficha: ${p.name}</span>`;
-                
-                let btn = document.createElement('button');
-                btn.innerText = "VER";
-                btn.style.cssText = "padding:4px 6px;background:#d1ecf1;color:#0c5460;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
-                btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
-                
-                li.appendChild(btn);
-                ulNew.appendChild(li);
-            });
+	const updatePatientStats = () => {
+	        const analysis = analyzeTable();
+	        if(!analysis) return;
+	        
+	        newPatEl.innerText = `Pacientes nuevos: ${analysis.newPatients.length}`;
+	        discPatEl.innerText = `Pacientes de alta: ${analysis.discharged.length}`;
+	    };
+
+	const applyPatientFilter = (patientsArray) => {
+        if (!patientsArray || patientsArray.length === 0) {
+            alert("No hay pacientes en esta categoría.");
+            return;
         }
         
-        const ulDisc = document.getElementById('sam_disc_ul');
-        ulDisc.innerHTML = '';
-        if(analysis.discharged.length === 0) {
-            ulDisc.innerHTML = '<li style="padding:10px;font-size:10px;color:#adb5bd;text-align:center;">No hay pacientes de alta</li>';
-        } else {
-            analysis.discharged.forEach(p => {
-                let li = document.createElement('li');
-                li.style.cssText = "display:flex;justify-content:space-between;border-bottom:1px solid #f8f9fa;padding:6px;font-size:10px;align-items:center;width:100%;box-sizing:border-box;";
-                li.innerHTML = `<span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="Ficha: ${p.name}">📄 Ficha: ${p.name}</span>`;
-                
-                let btn = document.createElement('button');
-                btn.innerText = "VER";
-                btn.style.cssText = "padding:4px 6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;margin-left:4px;";
-                btn.onclick = () => { if(p.btn) p.btn.click(); else alert("Botón de receta no encontrado"); };
-                
-                li.appendChild(btn);
-                ulDisc.appendChild(li);
-            });
-        }
-    };
+        const j = _baseJQuery || window.$ || window.jQuery;
+        if (!j || !j.fn.dataTable) return;
+        
+        const dt = j('#tbl_resultado').DataTable();
+        const inp = j('#dt-search-0').length ? j('#dt-search-0') : j('.dataTables_filter input, input[type="search"]').first();
+        
+        // Extract IDs and join them with regex OR operator '|'
+        const ids = patientsArray.map(p => j.fn.dataTable.util ? j.fn.dataTable.util.escapeRegex(p.name) : p.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+        const searchStr = ids.join('|');
+        
+        // Update the visual input box and apply the regex search
+        if (inp.length) inp.val(searchStr);
+        dt.search(searchStr, true, false).draw();
+    	};
 
     setInterval(updatePatientStats, 5000);
     setTimeout(updatePatientStats, 500);
@@ -375,11 +346,15 @@
             }
         };
         document.getElementById('sam_serv_back').onclick = () => { s_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
-        document.getElementById('sam_new_back').onclick = () => { n_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
-        document.getElementById('sam_disc_back').onclick = () => { d_view.style.display = "none"; o.style.display = "flex"; e.style.width = "260px"; e.style.minWidth = "260px"; };
+        newPatEl.onclick = () => {
+            const analysis = analyzeTable();
+            applyPatientFilter(analysis.newPatients);
+        };
         
-        newPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; n_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
-        discPatEl.onclick = () => { updatePatientStats(); o.style.display = "none"; d_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; };
+        discPatEl.onclick = () => {
+            const analysis = analyzeTable();
+            applyPatientFilter(analysis.discharged);
+        };
         rs();
     },100);
 
