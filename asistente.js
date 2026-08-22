@@ -98,11 +98,23 @@
     const statsHeader = document.createElement("div");
     statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
     
-    const newPatEl = document.createElement("div");
-    newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
-    newPatEl.innerText = "Pacientes nuevos: -";
-    newPatEl.onmouseenter = () => newPatEl.style.color = "#0056b3";
-    newPatEl.onmouseleave = () => newPatEl.style.color = "#0c5460";
+	const newPatEl = document.createElement("div");
+	    newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
+	    newPatEl.innerText = "Pacientes nuevos: -";
+	    
+	    newPatEl.onmouseenter = () => {
+	        newPatEl.style.color = "#0056b3";
+	        q.innerText = "Identifica pacientes que tengan una receta en la ultima fecha filtrada y no hayan tenido una anteriormente";
+	        q.style.display = "block";
+	        const rect = newPatEl.getBoundingClientRect();
+	        q.style.left = (rect.right + 12) + "px";
+	        q.style.top = rect.top + "px";
+	    };
+	    
+	    newPatEl.onmouseleave = () => {
+	        newPatEl.style.color = "#0c5460";
+	        q.style.display = "none";
+	    };
     
     const discPatEl = document.createElement("div");
     discPatEl.style.cssText = "color:#856404; cursor:pointer; text-decoration:underline; transition:0.2s;";
