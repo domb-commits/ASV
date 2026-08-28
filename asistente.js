@@ -1,3 +1,16 @@
+// ==UserScript==
+// @name         Asistente de Validación
+// @namespace    https://github.com/domb-commits/ASV
+// @version      1.0.1
+// @description  Automatización y asistencia para validación de recetas
+// @author       You
+// @match        http://10.7.33.28/hlcm6/receta500.php
+// @updateURL    https://raw.githubusercontent.com/domb-commits/ASV/main/asistente.js
+// @downloadURL  https://raw.githubusercontent.com/domb-commits/ASV/main/asistente.js
+// @grant        none
+// @run-at       document-end
+// ==/UserScript==
+
 (function(){
     if(document.getElementById("custom-floating-menu")) return;
 
