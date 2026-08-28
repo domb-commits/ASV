@@ -12,6 +12,8 @@
 // ==/UserScript==
 
 (function(){
+	'use strict';
+	
     if(document.getElementById("custom-floating-menu")) return;
 
     // Cache the initial jQuery instance for DataTables
