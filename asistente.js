@@ -672,4 +672,23 @@
             }
         });
     }, 1000);
+	
+	document.addEventListener('keydown', (e) => {
+    // Detect Ctrl + Enter (or Cmd + Enter on Mac)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        
+        // Target the first element whose ID starts with 'agregar_' and has title 'Entregar Receta'
+        const targetBtn = document.querySelector('a[id^="agregar_"][title="Entregar Receta"]') 
+                       || document.querySelector('a[id^="agregar_"]')
+                       || document.querySelector('a[onclick*="verDetalle"]');
+        
+        if (targetBtn) {
+            targetBtn.click();
+            console.log("Shortcut triggered: Clicked", targetBtn.id);
+        } else {
+            console.warn("Shortcut triggered: No matching button found.");
+        }
+    }
+});
 })();
