@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.0.4
+// @version      1.1.0
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -41,6 +41,7 @@
         { o: "101-0023", d: "101-0173" },
         { o: "114-0016", d: "114-0065" },
         { o: "103-0022", d: "103-0019" },
+		{ o: "105-0010", d: "105-0134" },
         { o: "101-0212", d: "101-0213" }
     ];
 
@@ -615,6 +616,61 @@
     rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";e.style.width="340px";e.style.minWidth="340px";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
     o.appendChild(rowC);
+
+	// --- BOTÓN CARGA TRASPASOS ---
+    const cargaBtn = document.createElement("button");
+    cargaBtn.style.cssText = "width:100%;margin-top:8px;padding:10px;background:#17a2b8;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);";
+    cargaBtn.innerText = "CARGA TRASPASOS";
+    
+    cargaBtn.onclick = async () => {
+        const d = prompt("Paste your table data here:");
+        if(!d) return;
+        
+        const rows = d.trim().split("\n").map(r => r.split(/\t/));
+        const nuke = () => {
+            document.querySelectorAll(".GB_overlay, .GB_window, #GB_overlay, #GB_window, .greybox").forEach(el => el.remove());
+            document.body.style.overflow = "auto";
+        };
+        
+        for (let i = 0; i < rows.length; i++) {
+            nuke();
+            const id = i + 1;
+            const [prod, qty] = rows[i];
+            
+            let desc = document.getElementById("descripcion" + id);
+            if (!desc) {
+                if (typeof agregar === "function") agregar();
+                else document.querySelector(".button_send")?.click();
+                
+                await new Promise(r => setTimeout(r, 400));
+                desc = document.getElementById("descripcion" + id);
+            }
+            
+            if (desc && prod) {
+                desc.focus();
+                desc.value = prod.trim();
+                const ev = { bubbles: true, key: "Enter", code: "Enter", keyCode: 13 };
+                desc.dispatchEvent(new KeyboardEvent("keydown", ev));
+                desc.dispatchEvent(new KeyboardEvent("keypress", ev));
+            }
+            
+            await new Promise(r => setTimeout(r, 1200));
+            nuke();
+            
+            const cant = document.getElementById("cantidad" + id);
+            if (cant && qty) {
+                cant.focus();
+                cant.value = qty.trim();
+                cant.dispatchEvent(new Event("blur", { bubbles: true }));
+            }
+            
+            await new Promise(r => setTimeout(r, 200));
+        }
+        alert("Finished! Overlays cleared.");
+    };
+
+    // Append to your main view container (replace 'o' with 'e' if 'o' is not your main wrapper)
+    o.appendChild(cargaBtn);
 
     document.body.appendChild(e);
 
