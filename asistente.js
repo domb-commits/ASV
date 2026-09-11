@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.2.1
+// @version      1.2.2
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -617,53 +617,67 @@
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
     o.appendChild(rowC);
 
-	// --- 1. BOTÓN PRINCIPAL (Abre el submenú) ---
+	// --- 1. BOTÓN PRINCIPAL (En el menú principal 'o') ---
     const btnMenuTraspasos = document.createElement("button");
-    btnMenuTraspasos.style.cssText = "width:100%;margin-top:8px;padding:10px;background:#17a2b8;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);";
+    btnMenuTraspasos.className = "asst-btn";
+    btnMenuTraspasos.style.cssText = "width:100%;margin-top:6px;background:#17a2b8;";
     btnMenuTraspasos.innerText = "MENÚ TRASPASOS";
 
-    // --- 2. CONTENEDOR DEL SUBMENÚ ---
+    // --- 2. CONTENEDOR VISTA TRASPASOS (Estructura idéntica a Filtros) ---
     const traspasosView = document.createElement("div");
-    traspasosView.style.display = "none"; // Oculto por defecto
-    traspasosView.style.flexDirection = "column";
+    traspasosView.style.cssText = "display:none;flex-direction:column;gap:6px;";
 
-    // Botón Volver
+    // Header superior con título y botón Volver
+    const headerT = document.createElement("div");
+    headerT.style.cssText = "display:flex;justify-content:space-between;align-items:center;background:#343a40;padding:4px 8px;border-radius:4px;color:#fff;font-weight:bold;font-size:11px;";
+    
+    const titleT = document.createElement("span");
+    titleT.innerText = "Traspasos";
+
     const btnVolverT = document.createElement("button");
-    btnVolverT.innerText = "⬅ Volver";
-    btnVolverT.style.cssText = "margin-bottom:10px;padding:5px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;";
+    btnVolverT.innerText = "Volver ✖";
+    btnVolverT.style.cssText = "background:transparent;border:none;color:#ffc107;cursor:pointer;font-weight:bold;font-size:10px;";
     btnVolverT.onclick = () => {
         traspasosView.style.display = "none";
-        o.style.display = "flex"; // Vuelve a mostrar el menú principal ('o')
+        o.style.display = "flex"; // Vuelve al menú principal
     };
 
-    // Botón 1: Carga por Tabla (Tu código anterior)
+    headerT.appendChild(titleT);
+    headerT.appendChild(btnVolverT);
+
+    // Grid de opciones (2 columnas, igual a Filtros)
+    const gridT = document.createElement("div");
+    gridT.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;";
+
+    // Botón 1: Carga por Tabla
     const btnCargaTabla = document.createElement("button");
-    btnCargaTabla.innerText = "Carga por Tabla";
-    btnCargaTabla.style.cssText = "width:100%;margin-bottom:8px;padding:10px;background:#28a745;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;";
+    btnCargaTabla.className = "asst-btn";
+    btnCargaTabla.style.cssText = "background:#28a745;padding:6px;font-size:10px;";
+    btnCargaTabla.innerText = "Carga Tabla";
     btnCargaTabla.onclick = async () => {
         const d = prompt("Pegue los datos de la tabla aquí:");
-        if(!d) return;
-        
+        if (!d) return;
+
         const rows = d.trim().split("\n").map(r => r.split(/\t/));
         const nuke = () => {
             document.querySelectorAll(".GB_overlay, .GB_window, #GB_overlay, #GB_window, .greybox").forEach(el => el.remove());
             document.body.style.overflow = "auto";
         };
-        
+
         for (let i = 0; i < rows.length; i++) {
             nuke();
             const id = i + 1;
             const [prod, qty] = rows[i];
-            
+
             let desc = document.getElementById("descripcion" + id);
             if (!desc) {
                 if (typeof agregar === "function") agregar();
                 else document.querySelector(".button_send")?.click();
-                
+
                 await new Promise(r => setTimeout(r, 400));
                 desc = document.getElementById("descripcion" + id);
             }
-            
+
             if (desc && prod) {
                 desc.focus();
                 desc.value = prod.trim();
@@ -671,29 +685,29 @@
                 desc.dispatchEvent(new KeyboardEvent("keydown", ev));
                 desc.dispatchEvent(new KeyboardEvent("keypress", ev));
             }
-            
+
             await new Promise(r => setTimeout(r, 1200));
             nuke();
-            
+
             const cant = document.getElementById("cantidad" + id);
             if (cant && qty) {
                 cant.focus();
                 cant.value = qty.trim();
                 cant.dispatchEvent(new Event("blur", { bubbles: true }));
             }
-            
+
             await new Promise(r => setTimeout(r, 200));
         }
         alert("¡Proceso finalizado!");
     };
 
-    // Botón 2: Ver entregas de Pedido (NUEVO)
+    // Botón 2: Cargar por Pedido
     const btnCargaPedido = document.createElement("button");
-    btnCargaPedido.innerText = "Ver entregas de pedido";
-    btnCargaPedido.style.cssText = "width:100%;margin-bottom:8px;padding:10px;background:#007bff;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;";
+    btnCargaPedido.className = "asst-btn";
+    btnCargaPedido.style.cssText = "background:#007bff;padding:6px;font-size:10px;";
+    btnCargaPedido.innerText = "Por Pedido";
     btnCargaPedido.onclick = () => {
         const num = prompt("Ingrese el número de pedido:");
-        // Verifica que no esté vacío y que solo contenga números
         if (num && /^\d+$/.test(num.trim())) {
             window.location.href = `http://10.7.33.28/hlcm6/mapedi008.php?act=${num.trim()}`;
         } else if (num) {
@@ -701,20 +715,22 @@
         }
     };
 
-    // --- 3. ENSAMBLAJE DE LAS VISTAS ---
-    traspasosView.appendChild(btnVolverT);
-    traspasosView.appendChild(btnCargaTabla);
-    traspasosView.appendChild(btnCargaPedido);
+    // --- 3. ENSAMBLAJE ---
+    gridT.appendChild(btnCargaTabla);
+    gridT.appendChild(btnCargaPedido);
 
-    // Lógica para cambiar de vista al hacer clic
+    traspasosView.appendChild(headerT);
+    traspasosView.appendChild(gridT);
+
+    // Evento de apertura
     btnMenuTraspasos.onclick = () => {
-        o.style.display = "none"; // Oculta el menú principal ('o')
-        traspasosView.style.display = "flex"; // Muestra el menú de traspasos
+        o.style.display = "none";
+        traspasosView.style.display = "flex";
     };
 
-    // Añadir el botón al menú principal y la nueva vista al contenedor global
+    // Añadir a los contenedores correspondientes
     o.appendChild(btnMenuTraspasos);
-    e.appendChild(traspasosView); // 'e' es el contenedor raíz de tu asistente
+    e.appendChild(traspasosView);
 
     document.body.appendChild(e);
 
