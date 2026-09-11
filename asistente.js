@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.1.0
+// @version      1.2.0
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -59,7 +59,7 @@
 				"777-0057","777-0068","777-0167","777-0020","777-0052","777-0046","777-0053","777-0234",
 				"777-0062","777-0135","777-0012","777-0259","777-0061","777-0059","777-0070","777-0072",
 				"777-0074","777-0160","102-0036","105-0018","102-0029","116-0030","114-0005","777-0109",
-				"103-0022","116-0109", "112-0010", "113-0002", "211-0012", "113-0050", "102-0005"
+				"103-0022","116-0109", "112-0010", "113-0002", "211-0012", "113-0050", "102-0005", "102-0034"
     ];
     // =========================================================================
 	const PRESET_SERVICES = [
@@ -617,13 +617,31 @@
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
     o.appendChild(rowC);
 
-	// --- BOTÓN CARGA TRASPASOS ---
-    const cargaBtn = document.createElement("button");
-    cargaBtn.style.cssText = "width:100%;margin-top:8px;padding:10px;background:#17a2b8;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);";
-    cargaBtn.innerText = "CARGA TRASPASOS";
-    
-    cargaBtn.onclick = async () => {
-        const d = prompt("Paste your table data here:");
+	// --- 1. BOTÓN PRINCIPAL (Abre el submenú) ---
+    const btnMenuTraspasos = document.createElement("button");
+    btnMenuTraspasos.style.cssText = "width:100%;margin-top:8px;padding:10px;background:#17a2b8;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);";
+    btnMenuTraspasos.innerText = "MENÚ TRASPASOS";
+
+    // --- 2. CONTENEDOR DEL SUBMENÚ ---
+    const traspasosView = document.createElement("div");
+    traspasosView.style.display = "none"; // Oculto por defecto
+    traspasosView.style.flexDirection = "column";
+
+    // Botón Volver
+    const btnVolverT = document.createElement("button");
+    btnVolverT.innerText = "⬅ Volver";
+    btnVolverT.style.cssText = "margin-bottom:10px;padding:5px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;";
+    btnVolverT.onclick = () => {
+        traspasosView.style.display = "none";
+        o.style.display = "flex"; // Vuelve a mostrar el menú principal ('o')
+    };
+
+    // Botón 1: Carga por Tabla (Tu código anterior)
+    const btnCargaTabla = document.createElement("button");
+    btnCargaTabla.innerText = "Carga por Tabla";
+    btnCargaTabla.style.cssText = "width:100%;margin-bottom:8px;padding:10px;background:#28a745;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;";
+    btnCargaTabla.onclick = async () => {
+        const d = prompt("Pegue los datos de la tabla aquí:");
         if(!d) return;
         
         const rows = d.trim().split("\n").map(r => r.split(/\t/));
@@ -666,8 +684,37 @@
             
             await new Promise(r => setTimeout(r, 200));
         }
-        alert("Finished! Overlays cleared.");
+        alert("¡Proceso finalizado!");
     };
+
+    // Botón 2: Ver entregas de Pedido (NUEVO)
+    const btnCargaPedido = document.createElement("button");
+    btnCargaPedido.innerText = "Ver entregas de pedido";
+    btnCargaPedido.style.cssText = "width:100%;margin-bottom:8px;padding:10px;background:#007bff;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;";
+    btnCargaPedido.onclick = () => {
+        const num = prompt("Ingrese el número de pedido:");
+        // Verifica que no esté vacío y que solo contenga números
+        if (num && /^\d+$/.test(num.trim())) {
+            window.location.href = `http://10.7.33.28/hlcm6/mapedi008.php?act=${num.trim()}`;
+        } else if (num) {
+            alert("Por favor, ingrese un número válido.");
+        }
+    };
+
+    // --- 3. ENSAMBLAJE DE LAS VISTAS ---
+    traspasosView.appendChild(btnVolverT);
+    traspasosView.appendChild(btnCargaTabla);
+    traspasosView.appendChild(btnCargaPedido);
+
+    // Lógica para cambiar de vista al hacer clic
+    btnMenuTraspasos.onclick = () => {
+        o.style.display = "none"; // Oculta el menú principal ('o')
+        traspasosView.style.display = "flex"; // Muestra el menú de traspasos
+    };
+
+    // Añadir el botón al menú principal y la nueva vista al contenedor global
+    o.appendChild(btnMenuTraspasos);
+    e.appendChild(traspasosView); // 'e' es el contenedor raíz de tu asistente
 
     // Append to your main view container (replace 'o' with 'e' if 'o' is not your main wrapper)
     o.appendChild(cargaBtn);
