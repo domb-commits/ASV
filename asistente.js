@@ -703,7 +703,7 @@
     // Botón VOLVER inferior (Gris completo)
     const btnVolverT = document.createElement("button");
     btnVolverT.innerText = "VOLVER";
-    btnVolverT.style.cssText = "width:90%;padding:10px 10px;margin:0 auto;background:#e9ecef;color:#495057;border:none;border-radius:6px;font-weight:bold;font-size:11px;text-transform:uppercase;cursor:pointer;margin-top:4px;";
+    btnVolverT.style.cssText = "width:90%;padding:10px 10px;margin:10px ;background:#e9ecef;color:#495057;border:none;border-radius:6px;font-weight:bold;font-size:11px;text-transform:uppercase;cursor:pointer;margin-top:4px;";
     btnVolverT.onclick = () => {
         traspasosView.style.display = "none";
         o.style.display = "flex"; // Regresa al menú principal
