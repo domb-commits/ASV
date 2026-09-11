@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.2.4
+// @version      1.2.5
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -638,7 +638,7 @@
 
     // Botón 1: Carga Tabla (Verde pastel)
     const btnCargaTabla = document.createElement("button");
-    btnCargaTabla.style.cssText = "padding:10px 6px;margin:10px;background:#d4edda;color:#155724;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
+    btnCargaTabla.style.cssText = "padding:10px 6px;margin:6px;background:#d4edda;color:#155724;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
     btnCargaTabla.innerText = "CARGA TABLA";
     btnCargaTabla.onclick = async () => {
         const d = prompt("Pegue los datos de la tabla aquí:");
@@ -689,7 +689,7 @@
 
     // Botón 2: Por Pedido (Azul pastel)
     const btnCargaPedido = document.createElement("button");
-    btnCargaPedido.style.cssText = "padding:10px 6px;margin:10px;background:#d0e1fd;color:#0c4a6e;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
+    btnCargaPedido.style.cssText = "padding:10px 6px;margin:6px;background:#d0e1fd;color:#0c4a6e;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
     btnCargaPedido.innerText = "VER ENTREGAS";
     btnCargaPedido.onclick = () => {
         const num = prompt("Ingrese el número de pedido:");
@@ -703,7 +703,7 @@
     // Botón VOLVER inferior (Gris completo)
     const btnVolverT = document.createElement("button");
     btnVolverT.innerText = "VOLVER";
-    btnVolverT.style.cssText = "width:100%;padding:10px;margin:10px;background:#e9ecef;color:#495057;border:none;border-radius:6px;font-weight:bold;font-size:11px;text-transform:uppercase;cursor:pointer;margin-top:4px;";
+    btnVolverT.style.cssText = "width:100%;padding:10px 10px;margin:10px;background:#e9ecef;color:#495057;border:none;border-radius:6px;font-weight:bold;font-size:11px;text-transform:uppercase;cursor:pointer;margin-top:4px;";
     btnVolverT.onclick = () => {
         traspasosView.style.display = "none";
         o.style.display = "flex"; // Regresa al menú principal
