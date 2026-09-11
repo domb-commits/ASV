@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.2.0
+// @version      1.2.1
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -715,9 +715,6 @@
     // Añadir el botón al menú principal y la nueva vista al contenedor global
     o.appendChild(btnMenuTraspasos);
     e.appendChild(traspasosView); // 'e' es el contenedor raíz de tu asistente
-
-    // Append to your main view container (replace 'o' with 'e' if 'o' is not your main wrapper)
-    o.appendChild(cargaBtn);
 
     document.body.appendChild(e);
 
