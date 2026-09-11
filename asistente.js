@@ -620,40 +620,26 @@
 	// --- 1. BOTÓN PRINCIPAL (En el menú principal 'o') ---
     const btnMenuTraspasos = document.createElement("button");
     btnMenuTraspasos.className = "asst-btn";
-    btnMenuTraspasos.style.cssText = "width:100%;margin-top:6px;background:#17a2b8;";
+    btnMenuTraspasos.style.cssText = "width:100%;margin-top:8px;padding:10px;background:#17a2b8;color:#fff;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;";
     btnMenuTraspasos.innerText = "MENÚ TRASPASOS";
 
-    // --- 2. CONTENEDOR VISTA TRASPASOS (Estructura idéntica a Filtros) ---
+    // --- 2. CONTENEDOR VISTA TRASPASOS (Estilo Filtro por Servicio) ---
     const traspasosView = document.createElement("div");
-    traspasosView.style.cssText = "display:none;flex-direction:column;gap:6px;";
+    traspasosView.style.cssText = "display:none;flex-direction:column;gap:8px;";
 
-    // Header superior con título y botón Volver
-    const headerT = document.createElement("div");
-    headerT.style.cssText = "display:flex;justify-content:space-between;align-items:center;background:#343a40;padding:4px 8px;border-radius:4px;color:#fff;font-weight:bold;font-size:11px;";
-    
-    const titleT = document.createElement("span");
-    titleT.innerText = "Traspasos";
+    // Encabezado de sección centrado
+    const sectionTitle = document.createElement("div");
+    sectionTitle.style.cssText = "text-align:center;font-weight:bold;font-size:11px;color:#495057;padding:4px 0;text-transform:uppercase;letter-spacing:0.5px;";
+    sectionTitle.innerText = "OPCIONES DE TRASPASO";
 
-    const btnVolverT = document.createElement("button");
-    btnVolverT.innerText = "Volver ✖";
-    btnVolverT.style.cssText = "background:transparent;border:none;color:#ffc107;cursor:pointer;font-weight:bold;font-size:10px;";
-    btnVolverT.onclick = () => {
-        traspasosView.style.display = "none";
-        o.style.display = "flex"; // Vuelve al menú principal
-    };
-
-    headerT.appendChild(titleT);
-    headerT.appendChild(btnVolverT);
-
-    // Grid de opciones (2 columnas, igual a Filtros)
+    // Grid de opciones de 2 columnas
     const gridT = document.createElement("div");
-    gridT.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;";
+    gridT.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px;";
 
-    // Botón 1: Carga por Tabla
+    // Botón 1: Carga Tabla (Verde pastel)
     const btnCargaTabla = document.createElement("button");
-    btnCargaTabla.className = "asst-btn";
-    btnCargaTabla.style.cssText = "background:#28a745;padding:6px;font-size:10px;";
-    btnCargaTabla.innerText = "Carga Tabla";
+    btnCargaTabla.style.cssText = "padding:10px 6px;background:#d4edda;color:#155724;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
+    btnCargaTabla.innerText = "CARGA TABLA";
     btnCargaTabla.onclick = async () => {
         const d = prompt("Pegue los datos de la tabla aquí:");
         if (!d) return;
@@ -701,11 +687,10 @@
         alert("¡Proceso finalizado!");
     };
 
-    // Botón 2: Cargar por Pedido
+    // Botón 2: Por Pedido (Azul pastel)
     const btnCargaPedido = document.createElement("button");
-    btnCargaPedido.className = "asst-btn";
-    btnCargaPedido.style.cssText = "background:#007bff;padding:6px;font-size:10px;";
-    btnCargaPedido.innerText = "Por Pedido";
+    btnCargaPedido.style.cssText = "padding:10px 6px;background:#d0e1fd;color:#0c4a6e;border:none;border-radius:6px;font-weight:bold;font-size:10px;text-transform:uppercase;cursor:pointer;";
+    btnCargaPedido.innerText = "POR PEDIDO";
     btnCargaPedido.onclick = () => {
         const num = prompt("Ingrese el número de pedido:");
         if (num && /^\d+$/.test(num.trim())) {
@@ -715,12 +700,22 @@
         }
     };
 
+    // Botón VOLVER inferior (Gris completo)
+    const btnVolverT = document.createElement("button");
+    btnVolverT.innerText = "VOLVER";
+    btnVolverT.style.cssText = "width:100%;padding:10px;background:#e9ecef;color:#495057;border:none;border-radius:6px;font-weight:bold;font-size:11px;text-transform:uppercase;cursor:pointer;margin-top:4px;";
+    btnVolverT.onclick = () => {
+        traspasosView.style.display = "none";
+        o.style.display = "flex"; // Regresa al menú principal
+    };
+
     // --- 3. ENSAMBLAJE ---
     gridT.appendChild(btnCargaTabla);
     gridT.appendChild(btnCargaPedido);
 
-    traspasosView.appendChild(headerT);
+    traspasosView.appendChild(sectionTitle);
     traspasosView.appendChild(gridT);
+    traspasosView.appendChild(btnVolverT);
 
     // Evento de apertura
     btnMenuTraspasos.onclick = () => {
@@ -728,7 +723,7 @@
         traspasosView.style.display = "flex";
     };
 
-    // Añadir a los contenedores correspondientes
+    // Agregar a contenedores de la UI
     o.appendChild(btnMenuTraspasos);
     e.appendChild(traspasosView);
 
