@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.2.8
+// @version      1.2.9
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -39,7 +39,7 @@
         { o: "202-0627", d: "202-0001" },
         { o: "105-0132", d: "105-0005" },
         { o: "101-0023", d: "101-0173" },
-        { o: "114-0016", d: "114-0065" },
+        { o: "114-0065", d: "114-0016" },
         { o: "103-0022", d: "103-0019" },
 		{ o: "105-0010", d: "105-0134" },
         { o: "101-0212", d: "101-0213" }
