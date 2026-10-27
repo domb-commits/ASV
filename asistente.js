@@ -835,7 +835,7 @@
             if (cells.length > viaIndex) {
                 const newTd = document.createElement('td');
                 newTd.className = "text-center";
-                newTd.style.cssText = "color:#ffffff; background-color:#ffffff; vertical-align:middle;";
+                newTd.style.cssText = "color:#6c757d; background-color:#ffffff; vertical-align:middle;";
 
                 const dosisCell = cells[dosisIndex];
                 if (dosisCell) {
