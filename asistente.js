@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.2
+// @version      1.3.3
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -822,7 +822,7 @@
         // 3. Inject New Column Header
         const newTh = document.createElement('th');
         newTh.className = "text-center text-info dosis-peso-injected";
-        newTh.style.cssText = "font-weight:bold; white-space:nowrap; background-color:#e3f2fd;";
+        newTh.style.cssText = "font-weight: white-space:nowrap; background-color:#ffffff;";
         newTh.textContent = "DOSIS / KG";
         headerRow.insertBefore(newTh, headerRow.children[viaIndex + 1]);
 
