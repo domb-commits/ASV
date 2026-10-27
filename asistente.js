@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.1
+// @version      1.3.2
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -766,16 +766,114 @@
         } else alert("Error al abrir rechazo.");
     };
 
+// ==========================================
+    // INJECT DOSIS / KG COLUMN LOGIC
+    // ==========================================
+    function processDosisPeso() {
+        // Look for any active/visible modal container
+        const modal = document.querySelector('#modalValidacion, .modal.show, .modal.in, #div_resultado');
+        if (!modal) return;
+
+        // Prevent duplicate injection if header already exists
+        if (modal.querySelector('.dosis-peso-injected')) return;
+
+        // 1. Extract Patient Weight
+        let patientWeight = null;
+        const allThs = modal.querySelectorAll('th, td');
+        for (let el of allThs) {
+            const text = el.textContent.trim().toUpperCase();
+            if (text === 'PESO' || text.startsWith('PESO')) {
+                const nextTd = el.nextElementSibling;
+                if (nextTd) {
+                    const valMatch = nextTd.textContent.replace(',', '.').match(/[\d\.]+/);
+                    if (valMatch) {
+                        patientWeight = parseFloat(valMatch[0]);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!patientWeight || isNaN(patientWeight) || patientWeight <= 0) return;
+
+        // 2. Locate Header Row and Column Indices (Accent-Insensitive)
+        const headers = modal.querySelectorAll('th');
+        let headerRow = null;
+        let viaIndex = -1;
+        let dosisIndex = -1;
+
+        headers.forEach(th => {
+            const cleanText = th.textContent.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (cleanText.includes('VIA')) {
+                headerRow = th.parentElement;
+            }
+        });
+
+        if (!headerRow) return;
+
+        Array.from(headerRow.children).forEach((child, idx) => {
+            const cleanText = child.textContent.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (cleanText.includes('VIA')) viaIndex = idx;
+            if (cleanText.includes('DOSIS')) dosisIndex = idx;
+        });
+
+        if (viaIndex === -1 || dosisIndex === -1) return;
+
+        // 3. Inject New Column Header
+        const newTh = document.createElement('th');
+        newTh.className = "text-center text-info dosis-peso-injected";
+        newTh.style.cssText = "font-weight:bold; white-space:nowrap; background-color:#e3f2fd;";
+        newTh.textContent = "DOSIS / KG";
+        headerRow.insertBefore(newTh, headerRow.children[viaIndex + 1]);
+
+        // 4. Inject Calculated Value Cells into Rows
+        const tbody = headerRow.closest('table')?.querySelector('tbody');
+        if (!tbody) return;
+
+        tbody.querySelectorAll('tr').forEach(row => {
+            const cells = row.children;
+            if (cells.length > viaIndex) {
+                const newTd = document.createElement('td');
+                newTd.className = "text-center";
+                newTd.style.cssText = "font-weight:bold; color:#0c4a6e; background-color:#f0f9ff; vertical-align:middle;";
+
+                const dosisCell = cells[dosisIndex];
+                if (dosisCell) {
+                    const dosisText = dosisCell.textContent.trim().replace(',', '.');
+                    const match = dosisText.match(/([\d\.]+)\s*([a-zA-Z]+)?/);
+                    if (match) {
+                        const dosisValue = parseFloat(match[1]);
+                        const unit = match[2] || 'mg';
+                        const calc = (dosisValue / patientWeight).toFixed(2);
+                        newTd.textContent = `${calc} ${unit}/kg`;
+                    } else {
+                        newTd.textContent = "-";
+                    }
+                } else {
+                    newTd.textContent = "-";
+                }
+
+                row.insertBefore(newTd, cells[viaIndex + 1]);
+            }
+        });
+    }
+
+    // ==========================================
+    // COMBINED BACKGROUND INTERVAL
+    // ==========================================
     setInterval(() => {
+        // A. Handle SEL. checkboxes on unvalidation table
         document.querySelectorAll('[onclick^="desvalidar_fila"]').forEach(btn => {
             const tr = btn.closest('tr');
-            if(tr && !tr.querySelector('.sam-row-cb')){
+            if (tr && !tr.querySelector('.sam-row-cb')) {
                 const table = tr.closest('table');
-                if(table){
+                if (table) {
                     const theadTr = table.querySelector('thead tr');
-                    if(theadTr && !theadTr.querySelector('.sam-th-cb')){
+                    if (theadTr && !theadTr.querySelector('.sam-th-cb')) {
                         const th = document.createElement('th');
-                        th.className = 'sam-th-cb'; th.innerText = 'Sel.'; th.style.cssText = 'text-align:center;width:40px;';
+                        th.className = 'sam-th-cb'; 
+                        th.innerText = 'Sel.'; 
+                        th.style.cssText = 'text-align:center;width:40px;';
                         theadTr.appendChild(th);
                     }
                 }
@@ -785,138 +883,21 @@
                 tr.appendChild(td);
             }
         });
+
+        // B. Handle live DOSIS / KG calculation inside validation modal
+        processDosisPeso();
+
     }, 1000);
-	
-	document.addEventListener('keydown', (e) => {
-        // Detect Ctrl + Enter (or Cmd + Enter on Mac)
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            
-            // Target the first element whose ID starts with 'agregar_' and has title 'Entregar Receta'
             const targetBtn = document.querySelector('a[id^="agregar_"][title="Entregar Receta"]') 
                            || document.querySelector('a[id^="agregar_"]')
                            || document.querySelector('a[onclick*="verDetalle"]');
-            
-            if (targetBtn) {
-                targetBtn.click();
-                console.log("Shortcut triggered: Clicked", targetBtn.id);
-            } else {
-                console.warn("Shortcut triggered: No matching button found.");
-            }
+            if (targetBtn) targetBtn.click();
         }
     });
-
-    // ==========================================
-    // INJECT DOSIS/KG COLUMN FUNCTION
-    // ==========================================
-    function injectDosisPesoColumn(modalNode) {
-        // 1. Prevent duplicate injections
-        if (modalNode.querySelector('.dosis-peso-injected')) return;
-    
-        // 2. Find Patient Weight
-        let patientWeight = null;
-        const allThs = modalNode.querySelectorAll('th');
-        for (let th of allThs) {
-            if (th.textContent.trim() === 'Peso') {
-                const tdWeight = th.nextElementSibling;
-                if (tdWeight) {
-                    // Extract just the number (e.g., "69.60 KG" -> 69.6)
-                    patientWeight = parseFloat(tdWeight.textContent.trim().replace(',', '.'));
-                    break;
-                }
-            }
-        }
-    
-        if (!patientWeight || isNaN(patientWeight) || patientWeight <= 0) return; // Exit if no valid weight
-    
-        // 3. Find the prescription table by locating the "Via" and "Cantidad Indicada Medico" headers
-        let headerRow = null;
-        let viaIndex = -1;
-        let dosisIndex = -1;
-    
-        for (let th of allThs) {
-            if (th.textContent.trim().toUpperCase() === 'Via') {
-                headerRow = th.parentElement;
-                // Map all column indices in this table
-                const headers = headerRow.children;
-                for (let i = 0; i < headers.length; i++) {
-                    const headerText = headers[i].textContent.trim().toUpperCase();
-                    if (headerText === 'Via') viaIndex = i;
-                    if (headerText === 'Cantidad Indicada Medico') dosisIndex = i;
-                }
-                break;
-            }
-        }
-    
-        if (!headerRow || viaIndex === -1 || dosisIndex === -1) return; // Exit if columns not found
-    
-        // 4. Inject the new Header (After VIA, which is viaIndex + 1)
-        const newTh = document.createElement('th');
-        newTh.className = "text-center text-info dosis-peso-injected";
-        newTh.style.cssText = "font-weight:bold; white-space:nowrap;";
-        newTh.textContent = "DOSIS / KG";
-        headerRow.insertBefore(newTh, headerRow.children[viaIndex + 1]);
-    
-        // 5. Inject the new Cells in the body
-        const tbody = headerRow.parentElement.nextElementSibling; // Assuming <thead> is followed by <tbody>
-        if (!tbody || tbody.tagName.toLowerCase() !== 'tbody') return;
-    
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cells = row.children;
-            if (cells.length > viaIndex) {
-                const newTd = document.createElement('td');
-                newTd.className = "text-center";
-                newTd.style.cssText = "font-weight:bold; color:#0c4a6e; background-color:#f0f9ff;";
-                
-                const dosisCell = cells[dosisIndex];
-                if (dosisCell) {
-                    const dosisText = dosisCell.textContent.trim();
-                    // Regex to separate the number from the unit
-                    const match = dosisText.match(/([\d,\.]+)\s*([a-zA-Z]+)?/);
-                    
-                    if (match) {
-                        const dosisValue = parseFloat(match[1].replace(',', '.'));
-                        const unit = match[2] || '';
-                        
-                        const calculated = (dosisValue / patientWeight).toFixed(2);
-                        newTd.textContent = `${calculated} ${unit}/kg`;
-                    } else {
-                        newTd.textContent = "-";
-                    }
-                }
-                
-                // Insert between VIA and CANTIDAD INDICADA
-                row.insertBefore(newTd, cells[viaIndex + 1]);
-            }
-        });
-    }
-
-    // ==========================================
-    // OBSERVER FOR VALIDATION MODAL
-    // ==========================================
-    const observer = new MutationObserver((mutations) => {
-        for (let mutation of mutations) {
-            // Check if new elements were added to the DOM (like a dynamic modal)
-            if (mutation.addedNodes.length) {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) {
-                        // Look for the modal container
-                        if (node.id === 'modalValidacion' || node.querySelector('#modalValidacion') || node.classList.contains('modal')) {
-                            const modalNode = node.id === 'modalValidacion' ? node : (node.querySelector('#modalValidacion') || node);
-                            
-                            // Wait 500ms for jQuery/DataTables to finish drawing the table inside the modal
-                            setTimeout(() => {
-                                injectDosisPesoColumn(modalNode);
-                            }, 500); 
-                        }
-                    }
-                });
-            }
-        }
-    });
-
-    // Start watching the entire body for changes
-    observer.observe(document.body, { childList: true, subtree: true });
 
 })();
