@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.5
+// @version      1.3.6
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -835,7 +835,7 @@
             if (cells.length > viaIndex) {
                 const newTd = document.createElement('td');
                 newTd.className = "text-center";
-                newTd.style.cssText = "font-weight: color:#0c4a6e; background-color:#ffffff; vertical-align:middle;";
+                newTd.style.cssText = "font-weight: color:#ffffff; background-color:#ffffff; vertical-align:middle;";
 
                 const dosisCell = cells[dosisIndex];
                 if (dosisCell) {
