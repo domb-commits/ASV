@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.6
+// @version      1.3.7
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -767,7 +767,7 @@
     };
 
 // ==========================================
-    // INJECT DOSIS / KG COLUMN LOGIC
+    // INJECT DOSIS / KG COLUMN LOGIC (MG / GR ONLY)
     // ==========================================
     function processDosisPeso() {
         // Look for any active/visible modal container
@@ -822,7 +822,7 @@
         // 3. Inject New Column Header
         const newTh = document.createElement('th');
         newTh.className = "text-center text-info dosis-peso-injected";
-        newTh.style.cssText = "font-weight: white-space:nowrap; background-color:#4b5880;";
+        newTh.style.cssText = "white-space:nowrap; background-color:#4b5880;";
         newTh.textContent = "DOSIS / KG";
         headerRow.insertBefore(newTh, headerRow.children[viaIndex + 1]);
 
@@ -835,17 +835,28 @@
             if (cells.length > viaIndex) {
                 const newTd = document.createElement('td');
                 newTd.className = "text-center";
-                newTd.style.cssText = "font-weight: color:#ffffff; background-color:#ffffff; vertical-align:middle;";
+                newTd.style.cssText = "color:#ffffff; background-color:#ffffff; vertical-align:middle;";
 
                 const dosisCell = cells[dosisIndex];
                 if (dosisCell) {
                     const dosisText = dosisCell.textContent.trim().replace(',', '.');
                     const match = dosisText.match(/([\d\.]+)\s*([a-zA-Z]+)?/);
+
                     if (match) {
                         const dosisValue = parseFloat(match[1]);
-                        const unit = match[2] || 'mg';
-                        const calc = (dosisValue / patientWeight).toFixed(2);
-                        newTd.textContent = `${calc} ${unit}/kg`;
+                        const unitStr = (match[2] || '').toLowerCase().trim();
+
+                        const isMg = ['mg', 'mgs'].includes(unitStr);
+                        const isG = ['g', 'gr', 'grs', 'gramo', 'gramos'].includes(unitStr);
+
+                        if (!isNaN(dosisValue) && (isMg || isG)) {
+                            // Multiply by 1000 if dose is in grams
+                            const dosisInMg = isG ? dosisValue * 1000 : dosisValue;
+                            const calc = (dosisInMg / patientWeight).toFixed(2);
+                            newTd.textContent = `${calc} mg/kg`;
+                        } else {
+                            newTd.textContent = "-";
+                        }
                     } else {
                         newTd.textContent = "-";
                     }
