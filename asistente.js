@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.8
+// @version      1.3.9
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -846,7 +846,7 @@
                         const dosisValue = parseFloat(match[1]);
                         const unitStr = (match[2] || '').toLowerCase().trim();
 
-                        const isMg = ['mg', 'mgs'].includes(unitStr);
+                        const isMg = ['mg', 'mgs', 'miligramo'].includes(unitStr);
                         const isG = ['g', 'gr', 'grs', 'gramo', 'gramos'].includes(unitStr);
 
                         if (!isNaN(dosisValue) && (isMg || isG)) {
