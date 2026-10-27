@@ -829,20 +829,20 @@
     
         if (!patientWeight || isNaN(patientWeight) || patientWeight <= 0) return; // Exit if no valid weight
     
-        // 3. Find the prescription table by locating the "VIA" and "DOSIS" headers
+        // 3. Find the prescription table by locating the "Via" and "Cantidad Indicada Medico" headers
         let headerRow = null;
         let viaIndex = -1;
         let dosisIndex = -1;
     
         for (let th of allThs) {
-            if (th.textContent.trim().toUpperCase() === 'VIA') {
+            if (th.textContent.trim().toUpperCase() === 'Via') {
                 headerRow = th.parentElement;
                 // Map all column indices in this table
                 const headers = headerRow.children;
                 for (let i = 0; i < headers.length; i++) {
                     const headerText = headers[i].textContent.trim().toUpperCase();
-                    if (headerText === 'VIA') viaIndex = i;
-                    if (headerText === 'DOSIS') dosisIndex = i;
+                    if (headerText === 'Via') viaIndex = i;
+                    if (headerText === 'Cantidad Indicada Medico') dosisIndex = i;
                 }
                 break;
             }
