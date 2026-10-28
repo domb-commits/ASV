@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.13
+// @version      1.3.14
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -592,8 +592,8 @@
     o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
     o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
     
-	const sep = document.createElement("div");
-    sep.className = "sam-separator";
+	const sep2 = document.createElement("div");
+    sep2.className = "sam-separator";
     o.appendChild(sep2);
 	
 	o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
