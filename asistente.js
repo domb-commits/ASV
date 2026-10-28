@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.4.0
+// @version      1.4.1
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -915,8 +915,8 @@
             if (btn) btn.click();
         };
 
-        // 1. Ctrl + Up Arrow -> Siguiente Receta
-        if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
+        // 1. Alt + Up Arrow -> Siguiente Receta
+        if (e.altKey && e.key === 'ArrowUp') {
             e.preventDefault();
             clickMenuBtn('SIGUIENTE RECETA');
         }
