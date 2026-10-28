@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.11
+// @version      1.3.13
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -594,7 +594,7 @@
     
 	const sep = document.createElement("div");
     sep.className = "sam-separator";
-    o.appendChild(sep);
+    o.appendChild(sep2);
 	
 	o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
     o.appendChild(v("LIMPIAR ENTREGAS (0)","#fff3cd",()=>{document.querySelectorAll('input').forEach(e=>{if(/^txt_lote_cantidad_\d+_\d+$/.test(e.id)){e.value="0";if(window.jQuery)window.jQuery(e).trigger("change");}})},!1,null,"#856404","Deja todas las cantidades de entrega en 0"));
@@ -611,6 +611,8 @@
 
     o.appendChild(v("FIX STOCK NEGATIVO","#fde2e4",()=>{var h=document.querySelectorAll('input[type=\"hidden\"][id^=\"txt_disponible_\"]');var count=0;h.forEach(function(i){var v=parseFloat(i.value);if(!isNaN(v)&&v<0){i.value=Math.abs(v);count++}});if(count>0)alert('Corregidos '+count+' negativos.');else alert('No hay negativos.')},!1,null,"#a35a5a","Convierte stock negativo en positivo"));
     
+	const sep = document.createElement("div");
+	sep.className = "sam-separator";
 	o.appendChild(sep);
     
 	const rowC = document.createElement("div");
