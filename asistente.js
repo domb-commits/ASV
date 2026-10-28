@@ -906,7 +906,7 @@
     // ==========================================
     document.addEventListener('keydown', (e) => {
         // Prevent shortcuts from triggering while typing in text boxes
-        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+        //if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
         // Helper to find and click our floating menu buttons by text
         const clickMenuBtn = (searchText) => {
