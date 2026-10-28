@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.14
+// @version      1.4.0
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -901,9 +901,63 @@
 
     }, 1000);
 
-    // Keyboard Shortcuts
+// ==========================================
+    // KEYBOARD SHORTCUTS
+    // ==========================================
     document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        // Prevent shortcuts from triggering while typing in text boxes
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        // Helper to find and click our floating menu buttons by text
+        const clickMenuBtn = (searchText) => {
+            const btn = Array.from(document.querySelectorAll('.sam-btn'))
+                             .find(b => b.textContent.toUpperCase().includes(searchText));
+            if (btn) btn.click();
+        };
+
+        // 1. Ctrl + Up Arrow -> Siguiente Receta
+        if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
+            e.preventDefault();
+            clickMenuBtn('SIGUIENTE RECETA');
+        }
+        // 2. Alt + 1 -> Validar Sugerida
+        else if (e.altKey && e.key === '1') {
+            e.preventDefault();
+            clickMenuBtn('VALIDAR SUGERIDA');
+        }
+        // 3. Alt + 2 -> X 2D
+        else if (e.altKey && e.key === '2') {
+            e.preventDefault();
+            clickMenuBtn('X 2D');
+        }
+        // 4. Alt + 3 -> X 3D
+        else if (e.altKey && e.key === '3') {
+            e.preventDefault();
+            clickMenuBtn('X 3D');
+        }
+        // 5. Alt + 4 -> X 4D
+        else if (e.altKey && e.key === '4') {
+            e.preventDefault();
+            clickMenuBtn('X 4D');
+        }
+        // 6. Shift + Enter -> Validar Urgencias
+        else if (e.shiftKey && e.key === 'Enter') {
+            e.preventDefault();
+            clickMenuBtn('VALIDAR URGENCIAS');
+        }
+        // 7. Alt + Enter -> Validar y Cerrar
+        else if (e.altKey && e.key === 'Enter') {
+            e.preventDefault();
+            clickMenuBtn('VALIDAR Y CERRAR');
+        }
+        // 8. Alt + º (Key to the left of 1) -> Limpiar Entregas (0)
+        // Uses e.code = 'Backquote' to catch the physical key regardless of OS language layout
+        else if (e.altKey && (e.key === 'º' || e.key === 'ª' || e.code === 'Backquote')) {
+            e.preventDefault();
+            clickMenuBtn('LIMPIAR ENTREGAS');
+        }
+        // 9. Existing Ctrl + Enter -> Default Primary Button
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             const targetBtn = document.querySelector('a[id^="agregar_"][title="Entregar Receta"]') 
                            || document.querySelector('a[id^="agregar_"]')
