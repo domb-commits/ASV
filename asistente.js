@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.3.10
+// @version      1.3.11
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -520,6 +520,17 @@
         if(initRegexAndPopulate()) { o.style.display = "none"; s_view.style.display = "flex"; e.style.width = "340px"; e.style.minWidth = "340px"; }
     },!1,null,"#0c5460",null));
 
+    o.appendChild(v("IR A FICHA PACIENTE","#9dc1e6",()=>{
+        const n = document.evaluate('//*[@id="collapsePaciente"]/div/div/table/tbody/tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        if(n && n.innerText.trim()){
+            const cta = n.innerText.trim();
+            const titleEl = document.getElementById('titulo_farmacos_hospitalizado');
+            let url = `http://10.7.33.28/hlcm6/rceint001.php?id=${cta}`;
+            if (titleEl && titleEl.innerText.toLowerCase().includes('hospitalizado')) url = `http://10.7.33.28/hlcm6/atehos003.php?id=${cta}`;
+            window.open(url, '_blank');
+        } else { alert('No se pudo encontrar el CTACTE.'); }
+    },!1,null,"#0d3460","Abre la ficha del paciente"));
+
     let m_idx = -1;
     o.appendChild(v("SIGUIENTE RECETA (↑)","#e3f2fd",function(){const e=document.querySelectorAll("#tbl_resultado tbody tr");let f=!1,n=(m_idx===-1)?e.length-1:m_idx-1;for(let r=n;r>=0;r--){const i=e[r].cells[2]?e[r].cells[2].innerText.trim():"",o_btn=e[r].querySelector('[onclick^="verDetalle"]');if(o_btn&&i==="EMITIDA"){m_idx=r;o_btn.click();f=!0;break}}if(!f){alert("Inicio de lista alcanzado.");m_idx=-1}},!0,null,"#0d47a1","Busca la siguiente receta emitida hacia arriba"));
 
@@ -580,9 +591,14 @@
 
     o.appendChild(v("VALIDAR Y CERRAR","#d4edda",async()=>{as();const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,400));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#155724","Aplica cambios PA, valida y cierra la ventana"));
     o.appendChild(v("VALIDAR URGENCIAS","#d1ecf1",async()=>{as();const b=document.getElementById("bodega_hospitalizado");if(b){b.value="90";if(typeof seleccionarBodega==="function")seleccionarBodega("90");if(window.jQuery)window.jQuery(b).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_validar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,500));const t=document.querySelector(".swal2-confirm");if(t)t.click()}},!0,null,"#0c5460","Cambia a Bodega 90 y valida"));
-    o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
+    
+	const sep = document.createElement("div");
+    sep.className = "sam-separator";
+    o.appendChild(sep);
+	
+	o.appendChild(v("ENTREGAR Y CERRAR","#c3e6cb",async()=>{const sel=document.getElementById("cbo_receta_estado");if(sel){sel.value="3";if(window.jQuery)window.jQuery(sel).trigger("change")}await new Promise(r=>setTimeout(r,400));const e=document.getElementById("btn_entregar_receta");if(e){e.click();await new Promise(r=>setTimeout(r,1200));const t=document.querySelector(".swal2-confirm");if(t)t.click();await new Promise(r=>setTimeout(r,1000));const n=document.querySelector('.btn-close[data-bs-dismiss=\"modal\"]');if(n)n.click()}},!0,null,"#1b5e20","Cambia a estado entrega total y finaliza"));
     o.appendChild(v("LIMPIAR ENTREGAS (0)","#fff3cd",()=>{document.querySelectorAll('input').forEach(e=>{if(/^txt_lote_cantidad_\d+_\d+$/.test(e.id)){e.value="0";if(window.jQuery)window.jQuery(e).trigger("change");}})},!1,null,"#856404","Deja todas las cantidades de entrega en 0"));
-
+	
     o.appendChild(v("DESVALIDAR TODO","#f8f9fa",async()=>{var j = _baseJQuery || window.$ || window.jQuery;const e=document.querySelectorAll('[onclick^="desvalidar_fila"]');if(0===e.length||!confirm(`¿Desvalidar ${e.length} ítems?`))return;const t=document.createElement("div");t.innerHTML='<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);backdrop-filter:blur(4px);color:#333;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999999;"><h3>Procesando...</h3><p>Item <span id="b-cnt">0</span> de '+e.length+"</p></div>",document.body.appendChild(t);const o_form=document.getElementById("guardarRecetaHospitalizado");let r_ajax;for(let i=0;i<e.length;i++){const l=e[i].getAttribute("onclick").match(/\d+/);if(!l)continue;const a=new FormData(o_form);a.set("modo","3");a.set("txt_safat038",l[0]);try{r_ajax=await j.ajax({url:"receta501.php",type:"post",data:a,cache:!1,contentType:!1,processData:!1,dataType:"html"});document.getElementById("b-cnt").innerText=i+1}catch(err){}}t.remove();if(r_ajax){j("#div_resultado").html(r_ajax)}},!1,null,"#6c757d","Elimina todas las validaciones actuales"));
     o.appendChild(v("DESVALIDAR SELECCIONADOS","#f8f9fa",async()=>{var j = _baseJQuery || window.$ || window.jQuery;const checkedCBs=document.querySelectorAll('.sam-row-cb:checked');const e=Array.from(checkedCBs).map(cb=>cb.closest('tr').querySelector('[onclick^="desvalidar_fila"]')).filter(Boolean);if(0===e.length){alert("No hay ítems seleccionados.");return;}if(!confirm(`¿Desvalidar ${e.length} ítems seleccionados?`))return;const t=document.createElement("div");t.innerHTML='<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);backdrop-filter:blur(4px);color:#333;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999999;"><h3>Procesando...</h3><p>Item <span id="b-cnt">0</span> de '+e.length+"</p></div>",document.body.appendChild(t);const o_form=document.getElementById("guardarRecetaHospitalizado");let r_ajax;for(let i=0;i<e.length;i++){const l=e[i].getAttribute("onclick").match(/\d+/);if(!l)continue;const a=new FormData(o_form);a.set("modo","3");a.set("txt_safat038",l[0]);try{r_ajax=await j.ajax({url:"receta501.php",type:"post",data:a,cache:!1,contentType:!1,processData:!1,dataType:"html"});document.getElementById("b-cnt").innerText=i+1}catch(err){}}t.remove();if(r_ajax){j("#div_resultado").html(r_ajax)}},!1,null,"#6c757d","Elimina solo las validaciones marcadas con el checkbox"));
 
@@ -593,28 +609,11 @@
     o.appendChild(rowR);
     o.appendChild(v("REABRIR PARA EDITAR","#e2e3e5",()=>rej(1,"Reapertura por corrección",!1),!1,null,"#383d41","Reabre la receta sin cerrar la ventana"));
 
-    const sep2 = document.createElement("div");
-    sep2.className = "sam-separator";
-    o.appendChild(sep2);
-
-    o.appendChild(v("IR A FICHA PACIENTE","#9dc1e6",()=>{
-        const n = document.evaluate('//*[@id="collapsePaciente"]/div/div/table/tbody/tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        if(n && n.innerText.trim()){
-            const cta = n.innerText.trim();
-            const titleEl = document.getElementById('titulo_farmacos_hospitalizado');
-            let url = `http://10.7.33.28/hlcm6/rceint001.php?id=${cta}`;
-            if (titleEl && titleEl.innerText.toLowerCase().includes('hospitalizado')) url = `http://10.7.33.28/hlcm6/atehos003.php?id=${cta}`;
-            window.open(url, '_blank');
-        } else { alert('No se pudo encontrar el CTACTE.'); }
-    },!1,null,"#0d3460","Abre la ficha del paciente"));
-
-    const sep = document.createElement("div");
-    sep.className = "sam-separator";
-    o.appendChild(sep);
-
     o.appendChild(v("FIX STOCK NEGATIVO","#fde2e4",()=>{var h=document.querySelectorAll('input[type=\"hidden\"][id^=\"txt_disponible_\"]');var count=0;h.forEach(function(i){var v=parseFloat(i.value);if(!isNaN(v)&&v<0){i.value=Math.abs(v);count++}});if(count>0)alert('Corregidos '+count+' negativos.');else alert('No hay negativos.')},!1,null,"#a35a5a","Convierte stock negativo en positivo"));
     
-    const rowC = document.createElement("div");
+	o.appendChild(sep);
+    
+	const rowC = document.createElement("div");
     rowC.style.cssText = "display:flex;gap:6px;width:100%;margin-top:4px;";
     rowC.appendChild(v("⚙️ CONFIG PA","#e3f2fd",()=>{o.style.display="none";p.style.display="flex";e.style.width="340px";e.style.minWidth="340px";rs();},!1,"1","#0d47a1","Configuración de cambios automáticos por PA"));
     rowC.appendChild(v("🔄 APLICAR PA","#d1ecf1",m_as,!1,"1","#0c5460","Ejecuta los cambios configurados ahora"));
