@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.4.3
+// @version      1.4.4
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -954,8 +954,7 @@
         // Uses e.code = 'Backquote' to catch the physical key regardless of OS language layout
         else if (e.altKey && (e.key === 'º' || e.key === 'ª' || e.code === 'Backquote')) {
             e.preventDefault();
-            clickMenuBtn('LIMPIAR ENTREGAS');
-			
+            clickMenuBtn('LIMPIAR ENTREGAS');		
         // 9. Ctrl + Alt + Enter -> Entregar y cerrar
         else if (e.altKey && e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
