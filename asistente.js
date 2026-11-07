@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.4.2
+// @version      1.4.3
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -955,8 +955,13 @@
         else if (e.altKey && (e.key === 'º' || e.key === 'ª' || e.code === 'Backquote')) {
             e.preventDefault();
             clickMenuBtn('LIMPIAR ENTREGAS');
+			
+        // 9. Ctrl + Alt + Enter -> Entregar y cerrar
+        else if (e.altKey && e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            clickMenuBtn('ENTREGAR Y CERRAR');
         }
-        // 9. Existing Ctrl + Enter -> Default Primary Button
+        // 10. Existing Ctrl + Enter -> Default Primary Button
         else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             const targetBtn = document.querySelector('a[id^="agregar_"][title="Entregar Receta"]') 
