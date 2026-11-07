@@ -940,6 +940,11 @@
             e.preventDefault();
             clickMenuBtn('X 4D');
         }
+		// 9. Ctrl + Alt + Enter -> Entregar y cerrar
+        else if (e.altKey && e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            clickMenuBtn('ENTREGAR Y CERRAR');
+        }
         // 6. Shift + Enter -> Validar Urgencias
         else if (e.shiftKey && e.key === 'Enter') {
             e.preventDefault();
@@ -956,11 +961,6 @@
             e.preventDefault();
             clickMenuBtn('LIMPIAR ENTREGAS');
 		}
-        // 9. Ctrl + Alt + Enter -> Entregar y cerrar
-        else if (e.altKey && e.ctrlKey && e.key === 'Enter') {
-            e.preventDefault();
-            clickMenuBtn('ENTREGAR Y CERRAR');
-        }
         // 10. Existing Ctrl + Enter -> Default Primary Button
         else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
