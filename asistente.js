@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.4.9
+// @version      1.5.0
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -78,19 +78,12 @@
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.4.9";
+    const SCRIPT_VERSION = "1.5.0";
 
     s.innerHTML += `
-    .sam-lights{position:absolute;top:0;left:0;right:0;height:18px;display:flex;justify-content:space-around;padding:0 6px;pointer-events:none;overflow:hidden;}
-    .sam-lights::before{content:'';position:absolute;left:-4px;right:-4px;top:-6px;height:12px;border-bottom:2px solid #78909c;border-radius:0 0 50% 50% / 0 0 100% 100%;}
-    .sam-bulb{position:relative;display:block;width:7px;height:10px;margin-top:5px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;animation:sam-twinkle 1.8s ease-in-out infinite;}
-    .sam-bulb:nth-child(even){margin-top:8px;}
-    .sam-bulb::before{content:'';position:absolute;top:-3px;left:1.5px;width:4px;height:3px;background:#78909c;border-radius:1px;}
-    .sam-bulb:nth-child(4n+1){background:#e57373;color:#e57373;}
-    .sam-bulb:nth-child(4n+2){background:#81c784;color:#81c784;animation-delay:.45s;}
-    .sam-bulb:nth-child(4n+3){background:#ffd54f;color:#ffd54f;animation-delay:.9s;}
-    .sam-bulb:nth-child(4n+4){background:#64b5f6;color:#64b5f6;animation-delay:1.35s;}
-    @keyframes sam-twinkle{0%,100%{opacity:.45;box-shadow:0 0 1px 0 currentColor;}50%{opacity:1;box-shadow:0 0 7px 2px currentColor;}}
+    .sam-lights{position:absolute;top:0;left:0;width:100%;height:34px;pointer-events:none;overflow:hidden;}
+    .sam-bulb{animation:sam-twinkle 1.8s ease-in-out infinite;}
+    @keyframes sam-twinkle{0%,100%{opacity:.55;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
     .sam-ver{font-size:9px;font-weight:600;color:#1565c0;background:#fff;border:1px solid #bbdefb;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;}
     @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}}
     `;
@@ -105,8 +98,47 @@
     e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
 
     const t = document.createElement("div");
-    t.style.cssText = "position:relative;background:#e3f2fd;color:#0d47a1;padding:24px 12px 10px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerHTML = `<div class="sam-lights">${'<i class="sam-bulb"></i>'.repeat(14)}</div><span>ASISTENTE DE VALIDACIÓN<span class="sam-ver">v${SCRIPT_VERSION}</span></span>`;
+    t.style.cssText = "position:relative;background:#e3f2fd;color:#0d47a1;padding:38px 12px 10px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
+    t.innerHTML = `<span>ASISTENTE DE VALIDACIÓN<span class="sam-ver">v${SCRIPT_VERSION}</span></span>`;
+
+    // Christmas lights: a wavy wire across the full title bar with pointed bulbs
+    // alternating above/below it. Rebuilt only when the bar width changes
+    // (260px ↔ 340px sub-views); called from the 1s polling interval.
+    const buildLights = () => {
+        const w = t.clientWidth;
+        if (!w || t.dataset.samLightsW === String(w)) return;
+        t.dataset.samLightsW = String(w);
+        const old = t.querySelector('.sam-lights');
+        if (old) old.remove();
+
+        const mid = 17, amp = 3.5, period = 120;
+        const yAt = x => mid + amp * Math.sin(2 * Math.PI * x / period);
+        const slope = x => Math.atan(amp * 2 * Math.PI / period * Math.cos(2 * Math.PI * x / period)) * 180 / Math.PI;
+        const colors = ['#e53935', '#43a047', '#fdd835', '#1e88e5'];
+        const tilts = [-14, 10, -8, 16];
+
+        let wire = `M-4,${yAt(-4).toFixed(1)}`;
+        for (let x = -2; x <= w + 4; x += 2) wire += ` L${x},${yAt(x).toFixed(1)}`;
+
+        const count = Math.max(6, Math.round(w / 20));
+        const step = w / count;
+        let bulbs = '';
+        for (let k = 0; k < count; k++) {
+            const x = step * (k + 0.5);
+            const up = k % 2 === 1;
+            const rot = slope(x) + tilts[k % 4] + (up ? 180 : 0);
+            bulbs += `<g transform="translate(${x.toFixed(1)},${yAt(x).toFixed(1)}) rotate(${rot.toFixed(1)})">`
+                  +  `<g class="sam-bulb" style="color:${colors[k % 4]};animation-delay:${((k % 4) * 0.45).toFixed(2)}s">`
+                  +  `<path d="M0,1 C-4.2,4 -4.2,9 0,14 C4.2,9 4.2,4 0,1Z" fill="currentColor"/>`
+                  +  `<ellipse cx="-1.3" cy="6" rx="0.8" ry="2.2" fill="#fff" opacity=".45"/></g>`
+                  +  `<rect x="-2" y="-1" width="4" height="4" rx="1" fill="#37474f"/></g>`;
+        }
+
+        t.insertAdjacentHTML('afterbegin',
+            `<svg class="sam-lights" width="${w}" height="34" viewBox="0 0 ${w} 34" aria-hidden="true">`
+          + `<path d="${wire}" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linecap="round"/>${bulbs}</svg>`);
+    };
+    setTimeout(buildLights, 150);
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -915,6 +947,9 @@
 
         // B. Handle live DOSIS / KG calculation inside validation modal
         processDosisPeso();
+
+        // C. Re-fit the title-bar Christmas lights if the bar width changed
+        buildLights();
 
     }, 1000);
 
