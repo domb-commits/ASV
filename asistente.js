@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.6.0
+// @version      1.6.1
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -76,9 +76,9 @@
 	];
 
     const s = document.createElement("style");
-    s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
+    s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid rgba(255,255,255,0.35);margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.6.0";
+    const SCRIPT_VERSION = "1.6.1";
 
     s.innerHTML += `
     .sam-lights{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
@@ -86,7 +86,7 @@
     @keyframes sam-twinkle{0%,100%{opacity:.8;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
     .sam-flake{opacity:.9;animation:sam-fall 5s linear infinite;}
     @keyframes sam-fall{0%{transform:translate(0,0);opacity:0;}12%{opacity:.9;}85%{opacity:.9;}100%{transform:translate(var(--dx,4px),var(--h,50px));opacity:0;}}
-    .sam-ver{font-size:9px;font-weight:600;color:#2e7d32;background:#fff;border:1px solid #a5d6a7;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;text-shadow:none;}
+    .sam-ver{font-size:9px;font-weight:600;color:#2e7d32;background:#fff;border:1px solid #a5d6a7;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;text-shadow:none;display:inline-block;line-height:11px;vertical-align:middle;}
     @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}.sam-flake{animation:none;}}
     `;
     document.head.appendChild(s);
@@ -97,15 +97,15 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff1f2;border:1px solid #f3c9cd;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#c62828;border:1px solid #8e1b1b;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
 
     const t = document.createElement("div");
-    t.style.cssText = "position:relative;background:linear-gradient(180deg,#388e3c,#2e7d32);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.35);padding:22px 12px 14px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #1b5e20;";
+    t.style.cssText = "position:relative;background:linear-gradient(180deg,#388e3c,#2e7d32);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.35);padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #1b5e20;";
     t.innerHTML = `<span>ASISTENTE DE VALIDACIÓN<span class="sam-ver">v${SCRIPT_VERSION}</span></span>`;
 
     // Christmas decor for the title bar, drawn as one SVG overlay:
-    //  - a light string spiralling around the bar (a helix seen from the side is a
-    //    sine wave: the rising half is the front strand, the falling half passes behind)
+    //  - a row of bulbs hanging at irregular spacing, cord length and tilt from a wire
+    //    along the top edge (stays inside the bar, so the bar height is unchanged)
     //  - a snow drift along the top edge and a few falling flakes
     // Rebuilt only when the bar size changes (260px ↔ 340px sub-views); it is called
     // from the 1s polling interval, so no MutationObserver is needed.
@@ -118,43 +118,32 @@
         if (old) old.remove();
 
         const f = v => v.toFixed(1);
-        const margin = 3, A = h / 2 - margin;   // wire swings between top and bottom edges
-        const D = 24;                            // horizontal run of one half-turn
-        const x0 = -D * 0.5;                     // phase: a front strand starts just off the left edge
-        const halves = Math.ceil((w - x0) / D) + 1;
-        const pt = (k, u) => [x0 + (k + u) * D, h / 2 + A * Math.sin(-Math.PI / 2 + Math.PI * (k + u))];
+        // Top wire: a gentle wave along the upper edge, overshooting both sides
+        const wireY = x => 2.5 + 1.8 * Math.sin(x / 38);
+        let wire = `M-4,${f(wireY(-4))}`;
+        for (let x = -1; x <= w + 4; x += 3) wire += ` L${x},${f(wireY(x))}`;
 
-        // Wire: even half-turns are the visible front strands, odd ones go behind the bar
-        let front = '', back = '';
-        for (let k = 0; k < halves; k++) {
-            let d = '';
-            for (let st = 0; st <= 12; st++) {
-                const [x, y] = pt(k, st / 12);
-                d += (st ? ' L' : 'M') + f(x) + ',' + f(y);
-            }
-            if (k % 2 === 0) front += d + ' '; else back += d + ' ';
-        }
-
-        // Bulbs: two per front strand, hanging down with a slight tilt
-        const colors = ['#ff5252', '#ffd54f', '#42a5f5', '#fafafa'];
-        const tilts = [-16, 14, -10, 18];
-        let bulbs = '', b = 0;
-        for (let k = 0; k < halves; k += 2) {
-            [0.28, 0.66].forEach(u => {
-                const [x, y] = pt(k, u);
-                if (x < -4 || x > w + 4) return;
-                bulbs += `<g transform="translate(${f(x)},${f(y)}) rotate(${tilts[b % 4]})">`
-                      +  `<g class="sam-bulb" style="color:${colors[b % 4]};animation-delay:${((b % 4) * 0.45).toFixed(2)}s">`
-                      +  `<path d="M0,1 C-4.2,4 -4.2,9 0,14 C4.2,9 4.2,4 0,1Z" fill="currentColor"/>`
-                      +  `<ellipse cx="-1.3" cy="6" rx="0.8" ry="2.2" fill="#fff" opacity=".5"/></g>`
-                      +  `<rect x="-2" y="-1" width="4" height="4" rx="1" fill="#263238"/></g>`;
-                b++;
-            });
+        // Bulbs: uneven gaps, cord lengths, tilts and colour order (deterministic, so a
+        // rebuild after a resize looks the same)
+        const gaps   = [17, 12, 22, 14, 19, 11, 23, 15, 13, 20];
+        const cords  = [4, 1, 6, 2, 5, 3, 6, 1, 3, 5, 2];
+        const tilts  = [-12, 8, -5, 15, -9, 6, -14, 10, -4, 12];
+        const colors = ['#ff5252', '#ffd54f', '#42a5f5', '#ff9800'];
+        const order  = [0, 2, 1, 3, 1, 0, 3, 2, 0, 1, 2, 3, 0, 3];
+        let bulbs = '';
+        for (let x = 8, b = 0; x < w - 6; x += gaps[b % gaps.length], b++) {
+            const y = wireY(x), c = cords[b % cords.length];
+            bulbs += `<line x1="${f(x)}" y1="${f(y)}" x2="${f(x)}" y2="${f(y + c)}" stroke="#14381a" stroke-width="1"/>`
+                  +  `<g transform="translate(${f(x)},${f(y + c)}) rotate(${tilts[b % tilts.length]})">`
+                  +  `<g class="sam-bulb" style="color:${colors[order[b % order.length]]};animation-delay:${((b % 5) * 0.4).toFixed(1)}s">`
+                  +  `<path d="M0,1 C-3.6,3.5 -3.6,8 0,12.5 C3.6,8 3.6,3.5 0,1Z" fill="currentColor"/>`
+                  +  `<ellipse cx="-1.2" cy="5.5" rx="0.8" ry="2" fill="#fff" opacity=".5"/></g>`
+                  +  `<rect x="-2" y="-1" width="4" height="4" rx="1" fill="#263238"/></g>`;
         }
 
         // Snow drift along the top edge (rounded lobes of varying depth)
         const lobes = Math.max(6, Math.round(w / 16)), lw = w / lobes;
-        const depths = [5, 8, 4, 7, 6, 9, 5];
+        const depths = [3, 6, 3, 5, 4, 7, 4];
         let cap = `M0,0 L${w},0 L${w},3`;
         for (let k = lobes - 1; k >= 0; k--) {
             const xl = k * lw, xr = (k + 1) * lw;
@@ -175,9 +164,8 @@
 
         t.insertAdjacentHTML('afterbegin',
             `<svg class="sam-lights" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="--h:${h}px" aria-hidden="true">`
-          + `<path d="${back}" fill="none" stroke="#1b5e20" stroke-width="1.2" stroke-dasharray="2 2" opacity=".55"/>`
           + `<path d="${cap}" fill="#fff" opacity=".96"/>`
-          + `<path d="${front}" fill="none" stroke="#14381a" stroke-width="1.8" stroke-linecap="round"/>`
+          + `<path d="${wire}" fill="none" stroke="#14381a" stroke-width="1.6" stroke-linecap="round"/>`
           + bulbs + flakes + `</svg>`);
     };
     setTimeout(buildLights, 150);
@@ -206,7 +194,7 @@
     // PATIENT ANALYTICS HEADER
     // ==========================================
     const statsHeader = document.createElement("div");
-    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
+    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding:6px 8px; background:#fff; border-radius:8px; margin-bottom:2px;";
     
 	const newPatEl = document.createElement("div");
 	    newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
@@ -248,7 +236,7 @@
     };
     document.addEventListener('focusin',(ev)=>{if(ev.target.closest('#custom-floating-menu'))prevent(ev);},true);
 
-    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#fff;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
 
     s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:4px;margin-top:2px;"><button id="sam_serv_all" style="flex:1;padding:6px 2px;background:#d4edda;color:#155724;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">MARCAR TODOS</button><button id="sam_serv_clear" style="flex:1;padding:6px 2px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button><button id="sam_serv_preset" style="flex:1;padding:6px 2px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">4ºTurno</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
@@ -724,7 +712,7 @@
 
     // Encabezado de sección centrado
     const sectionTitle = document.createElement("div");
-    sectionTitle.style.cssText = "text-align:center;font-weight:bold;font-size:11px;color:#495057;padding:4px 0;text-transform:uppercase;letter-spacing:0.5px;";
+    sectionTitle.style.cssText = "text-align:center;font-weight:bold;font-size:11px;color:#fff;padding:4px 0;text-transform:uppercase;letter-spacing:0.5px;";
     sectionTitle.innerText = "OPCIONES DE TRASPASO";
 
     // Grid de opciones de 2 columnas
