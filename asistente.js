@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.6.3
+// @version      1.6.4
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -78,11 +78,11 @@
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.6.3";
+    const SCRIPT_VERSION = "1.6.4";
 
     s.innerHTML += `
     .sam-tree{position:absolute;left:0;bottom:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0.09;}
-    .sam-lights{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
+    .sam-lights{position:absolute;top:0;left:0;width:100%;pointer-events:none;overflow:visible;}
     .sam-bulb{animation:sam-twinkle 1.8s ease-in-out infinite;}
     @keyframes sam-twinkle{0%,100%{opacity:.8;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
     .sam-flake{opacity:.9;animation:sam-fall 5s linear infinite;}
@@ -106,8 +106,9 @@
 
     // Christmas decor for the title bar, drawn as one SVG overlay:
     //  - a row of bulbs hanging at irregular spacing, cord length and tilt from a wire
-    //    along the top edge (stays inside the bar, so the bar height is unchanged)
-    //  - a snow drift along the top edge and a few falling flakes
+    //    along the BOTTOM edge of the bar; the SVG is taller than the bar
+    //    (overflow visible) so the bulbs hang down over the menu body
+    //  - a snow drift along the top edge and a few falling flakes (kept inside the bar)
     // Rebuilt only when the bar size changes (260px ↔ 340px sub-views); it is called
     // from the 1s polling interval, so no MutationObserver is needed.
     const buildLights = () => {
@@ -119,15 +120,16 @@
         if (old) old.remove();
 
         const f = v => v.toFixed(1);
-        // Top wire: a gentle wave along the upper edge, overshooting both sides
-        const wireY = x => 2.5 + 1.8 * Math.sin(x / 38);
+        // Wire: a gentle wave hugging the bottom edge, overshooting both sides
+        const hang = 26;                                       // room below the bar for the bulbs
+        const wireY = x => h - 3 + 1.8 * Math.sin(x / 38);
         let wire = `M-4,${f(wireY(-4))}`;
         for (let x = -1; x <= w + 4; x += 3) wire += ` L${x},${f(wireY(x))}`;
 
         // Bulbs: uneven gaps, cord lengths, tilts and colour order (deterministic, so a
         // rebuild after a resize looks the same)
         const gaps   = [17, 12, 22, 14, 19, 11, 23, 15, 13, 20];
-        const cords  = [4, 1, 6, 2, 5, 3, 6, 1, 3, 5, 2];
+        const cords  = [3, 1, 4, 2, 4, 1, 3, 2, 4, 1, 3];
         const tilts  = [-12, 8, -5, 15, -9, 6, -14, 10, -4, 12];
         const colors = ['#ff5252', '#ffd54f', '#42a5f5', '#ff9800'];
         const order  = [0, 2, 1, 3, 1, 0, 3, 2, 0, 1, 2, 3, 0, 3];
@@ -164,7 +166,7 @@
         }
 
         t.insertAdjacentHTML('afterbegin',
-            `<svg class="sam-lights" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="--h:${h}px" aria-hidden="true">`
+            `<svg class="sam-lights" width="${w}" height="${h + hang}" viewBox="0 0 ${w} ${h + hang}" style="--h:${h}px;height:${h + hang}px" aria-hidden="true">`
           + `<path d="${cap}" fill="#fff" opacity=".96"/>`
           + `<path d="${wire}" fill="none" stroke="#14381a" stroke-width="1.6" stroke-linecap="round"/>`
           + bulbs + flakes + `</svg>`);
@@ -233,6 +235,11 @@
     n.onclick = () => e.remove();
     t.appendChild(n);
     e.appendChild(t);
+
+    // Small breathing space under the title bar so the hanging bulbs don't cover the labels below
+    const lightsGap = document.createElement("div");
+    lightsGap.style.cssText = "height:12px;flex:0 0 12px;";
+    e.appendChild(lightsGap);
 
     let r = !1, i, l, a, c;
     t.onmousedown = function(t){r=!0,i=t.clientX-e.offsetLeft,l=t.clientY-e.offsetTop};
