@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.4.8
+// @version      1.4.9
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -77,6 +77,23 @@
 
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
+    // Keep in sync with @version above (@grant none → GM_info is unavailable)
+    const SCRIPT_VERSION = "1.4.9";
+
+    s.innerHTML += `
+    .sam-lights{position:absolute;top:0;left:0;right:0;height:18px;display:flex;justify-content:space-around;padding:0 6px;pointer-events:none;overflow:hidden;}
+    .sam-lights::before{content:'';position:absolute;left:-4px;right:-4px;top:-6px;height:12px;border-bottom:2px solid #78909c;border-radius:0 0 50% 50% / 0 0 100% 100%;}
+    .sam-bulb{position:relative;display:block;width:7px;height:10px;margin-top:5px;border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;animation:sam-twinkle 1.8s ease-in-out infinite;}
+    .sam-bulb:nth-child(even){margin-top:8px;}
+    .sam-bulb::before{content:'';position:absolute;top:-3px;left:1.5px;width:4px;height:3px;background:#78909c;border-radius:1px;}
+    .sam-bulb:nth-child(4n+1){background:#e57373;color:#e57373;}
+    .sam-bulb:nth-child(4n+2){background:#81c784;color:#81c784;animation-delay:.45s;}
+    .sam-bulb:nth-child(4n+3){background:#ffd54f;color:#ffd54f;animation-delay:.9s;}
+    .sam-bulb:nth-child(4n+4){background:#64b5f6;color:#64b5f6;animation-delay:1.35s;}
+    @keyframes sam-twinkle{0%,100%{opacity:.45;box-shadow:0 0 1px 0 currentColor;}50%{opacity:1;box-shadow:0 0 7px 2px currentColor;}}
+    .sam-ver{font-size:9px;font-weight:600;color:#1565c0;background:#fff;border:1px solid #bbdefb;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;}
+    @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}}
+    `;
     document.head.appendChild(s);
 
     const q = document.createElement("div");
@@ -88,8 +105,8 @@
     e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
 
     const t = document.createElement("div");
-    t.style.cssText = "background:#e3f2fd;color:#0d47a1;padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
-    t.innerText = "ASISTENTE DE VALIDACIÓN";
+    t.style.cssText = "position:relative;background:#e3f2fd;color:#0d47a1;padding:24px 12px 10px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
+    t.innerHTML = `<div class="sam-lights">${'<i class="sam-bulb"></i>'.repeat(14)}</div><span>ASISTENTE DE VALIDACIÓN<span class="sam-ver">v${SCRIPT_VERSION}</span></span>`;
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
