@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.6.2
+// @version      1.6.3
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -78,7 +78,7 @@
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.6.2";
+    const SCRIPT_VERSION = "1.6.3";
 
     s.innerHTML += `
     .sam-tree{position:absolute;left:0;bottom:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0.09;}
@@ -99,22 +99,6 @@
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
     e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
-
-    // Faint pine tree behind the menu content (z-index:-1 inside the menu's stacking
-    // context: above the card background, below every button and panel)
-    e.insertAdjacentHTML('afterbegin',
-        `<svg class="sam-tree" viewBox="0 0 220 400" preserveAspectRatio="xMidYMax meet" aria-hidden="true">`
-      + `<rect x="96" y="340" width="28" height="56" fill="#6d4c41"/>`
-      + `<g fill="#388e3c" stroke="#1b5e20" stroke-width="2" stroke-linejoin="round">`
-      +   `<path d="M110,210 L214,350 Q162,362 110,354 Q58,362 6,350 Z"/>`
-      +   `<path d="M110,140 L196,270 Q153,282 110,274 Q67,282 24,270 Z"/>`
-      +   `<path d="M110,80 L176,190 Q143,200 110,193 Q77,200 44,190 Z"/>`
-      +   `<path d="M110,38 L152,120 Q131,128 110,122 Q89,128 68,120 Z"/>`
-      + `</g>`
-      + `<path d="M110,10 L113.5,19.2 L123.3,19.7 L115.7,25.9 L118.2,35.3 L110,30 L101.8,35.3 L104.3,25.9 L96.7,19.7 L106.5,19.2 Z" fill="#f9a825"/>`
-      + `<g fill="#c62828"><circle cx="100" cy="98" r="5"/><circle cx="90" cy="165" r="5.5"/><circle cx="80" cy="235" r="6"/><circle cx="60" cy="318" r="6.5"/><circle cx="160" cy="330" r="6.5"/><circle cx="141" cy="252" r="6"/></g>`
-      + `<g fill="#f9a825"><circle cx="124" cy="108" r="4.5"/><circle cx="128" cy="175" r="5"/><circle cx="110" cy="222" r="5"/><circle cx="120" cy="300" r="6"/><circle cx="90" cy="338" r="5.5"/></g>`
-      + `</svg>`);
 
     const t = document.createElement("div");
     t.style.cssText = "position:relative;background:linear-gradient(180deg,#388e3c,#2e7d32);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.35);padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #1b5e20;";
@@ -186,6 +170,58 @@
           + bulbs + flakes + `</svg>`);
     };
     setTimeout(buildLights, 150);
+
+    // Faint pine tree filling the whole menu body, from just under the title bar down to
+    // the bottom edge. It sits at z-index:-1 inside the menu's stacking context (above the
+    // card background, below every button and panel). It is rebuilt to the menu's current
+    // size whenever that changes (each sub-view has a different height); the polling
+    // interval calls it, and preserveAspectRatio="none" stretches the old drawing for the
+    // moment between a view change and the next rebuild.
+    const buildTree = () => {
+        const W = e.clientWidth, H = e.clientHeight, top = t.offsetHeight;
+        const key = W + 'x' + H + 'x' + top;
+        if (!W || !H || !top || e.dataset.samTreeKey === key) return;
+        e.dataset.samTreeKey = key;
+        const old = e.querySelector('.sam-tree');
+        if (old) old.remove();
+
+        const f = v => v.toFixed(1);
+        const cx = W / 2;
+        const rs = Math.min(14, W * 0.055);                    // star outer radius
+        const starCy = top + 6 + rs;
+        const trunkH = Math.max(14, (H - top) * 0.07);
+        const trunkW = W * 0.11;
+        const yTop = starCy + rs + 2, yBase = H - trunkH;
+        const B = yBase - yTop;
+        const n = B > 330 ? 5 : 4;                             // more tiers on a taller menu
+        const hi = B / n * 1.55;                               // tier height (tiers overlap)
+        const rOrn = Math.min(7, Math.max(4, W * 0.025));
+
+        let tiers = '', orn = '';
+        for (let i = 0; i < n; i++) {
+            const apex = yTop + i * (B - hi) / (n - 1), base = apex + hi;
+            const hw = (cx - 3) * (0.38 + 0.62 * i / (n - 1)), sc = hi * 0.09;
+            // upper tiers are drawn last so they overlap the wider ones below
+            tiers = `<path d="M${f(cx)},${f(apex)} L${f(cx + hw)},${f(base)} Q${f(cx + hw / 2)},${f(base + sc)} ${f(cx)},${f(base + sc / 3)} Q${f(cx - hw / 2)},${f(base + sc)} ${f(cx - hw)},${f(base)} Z"/>` + tiers;
+            [[0.5, i % 2 ? 0.45 : -0.45], [0.78, i % 2 ? -0.35 : 0.35], [0.28, 0.05]].forEach(([fy, fx], j) => {
+                if (j === 2 && i < 2) return;
+                orn += `<circle cx="${f(cx + hw * fy * fx)}" cy="${f(apex + hi * fy)}" r="${f(rOrn)}" fill="${(i + j) % 2 ? '#f9a825' : '#c62828'}"/>`;
+            });
+        }
+
+        let star = '';
+        for (let k = 0; k < 10; k++) {
+            const ang = (-90 + 36 * k) * Math.PI / 180, r = k % 2 ? rs * 0.43 : rs;
+            star += (k ? ' L' : 'M') + f(cx + r * Math.cos(ang)) + ',' + f(starCy + r * Math.sin(ang));
+        }
+
+        e.insertAdjacentHTML('afterbegin',
+            `<svg class="sam-tree" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`
+          + `<rect x="${f(cx - trunkW / 2)}" y="${f(yBase - 4)}" width="${f(trunkW)}" height="${f(trunkH + 4)}" fill="#6d4c41"/>`
+          + `<g fill="#388e3c" stroke="#1b5e20" stroke-width="2" stroke-linejoin="round">${tiers}</g>`
+          + `<path d="${star} Z" fill="#f9a825"/>${orn}</svg>`);
+    };
+    setTimeout(buildTree, 150);
 
     t.ondblclick = () => {
         document.querySelectorAll('input[id^="txt_cantidad_qf_"]').forEach(inp => inp.removeAttribute('readonly'));
@@ -997,6 +1033,7 @@
 
         // C. Re-fit the title-bar Christmas lights if the bar width changed
         buildLights();
+        buildTree();
 
     }, 1000);
 
