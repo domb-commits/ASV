@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.5.0
+// @version      1.6.0
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -78,14 +78,16 @@
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.5.0";
+    const SCRIPT_VERSION = "1.6.0";
 
     s.innerHTML += `
-    .sam-lights{position:absolute;top:0;left:0;width:100%;height:34px;pointer-events:none;overflow:hidden;}
+    .sam-lights{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
     .sam-bulb{animation:sam-twinkle 1.8s ease-in-out infinite;}
-    @keyframes sam-twinkle{0%,100%{opacity:.55;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
-    .sam-ver{font-size:9px;font-weight:600;color:#1565c0;background:#fff;border:1px solid #bbdefb;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;}
-    @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}}
+    @keyframes sam-twinkle{0%,100%{opacity:.8;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
+    .sam-flake{opacity:.9;animation:sam-fall 5s linear infinite;}
+    @keyframes sam-fall{0%{transform:translate(0,0);opacity:0;}12%{opacity:.9;}85%{opacity:.9;}100%{transform:translate(var(--dx,4px),var(--h,50px));opacity:0;}}
+    .sam-ver{font-size:9px;font-weight:600;color:#2e7d32;background:#fff;border:1px solid #a5d6a7;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;text-shadow:none;}
+    @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}.sam-flake{animation:none;}}
     `;
     document.head.appendChild(s);
 
@@ -95,48 +97,88 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff1f2;border:1px solid #f3c9cd;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
 
     const t = document.createElement("div");
-    t.style.cssText = "position:relative;background:#e3f2fd;color:#0d47a1;padding:38px 12px 10px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #d1e3f3;";
+    t.style.cssText = "position:relative;background:linear-gradient(180deg,#388e3c,#2e7d32);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.35);padding:22px 12px 14px 12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #1b5e20;";
     t.innerHTML = `<span>ASISTENTE DE VALIDACIÓN<span class="sam-ver">v${SCRIPT_VERSION}</span></span>`;
 
-    // Christmas lights: a wavy wire across the full title bar with pointed bulbs
-    // alternating above/below it. Rebuilt only when the bar width changes
-    // (260px ↔ 340px sub-views); called from the 1s polling interval.
+    // Christmas decor for the title bar, drawn as one SVG overlay:
+    //  - a light string spiralling around the bar (a helix seen from the side is a
+    //    sine wave: the rising half is the front strand, the falling half passes behind)
+    //  - a snow drift along the top edge and a few falling flakes
+    // Rebuilt only when the bar size changes (260px ↔ 340px sub-views); it is called
+    // from the 1s polling interval, so no MutationObserver is needed.
     const buildLights = () => {
-        const w = t.clientWidth;
-        if (!w || t.dataset.samLightsW === String(w)) return;
-        t.dataset.samLightsW = String(w);
+        const w = t.clientWidth, h = t.clientHeight;
+        const key = w + 'x' + h;
+        if (!w || !h || t.dataset.samLightsKey === key) return;
+        t.dataset.samLightsKey = key;
         const old = t.querySelector('.sam-lights');
         if (old) old.remove();
 
-        const mid = 17, amp = 3.5, period = 120;
-        const yAt = x => mid + amp * Math.sin(2 * Math.PI * x / period);
-        const slope = x => Math.atan(amp * 2 * Math.PI / period * Math.cos(2 * Math.PI * x / period)) * 180 / Math.PI;
-        const colors = ['#e53935', '#43a047', '#fdd835', '#1e88e5'];
-        const tilts = [-14, 10, -8, 16];
+        const f = v => v.toFixed(1);
+        const margin = 3, A = h / 2 - margin;   // wire swings between top and bottom edges
+        const D = 24;                            // horizontal run of one half-turn
+        const x0 = -D * 0.5;                     // phase: a front strand starts just off the left edge
+        const halves = Math.ceil((w - x0) / D) + 1;
+        const pt = (k, u) => [x0 + (k + u) * D, h / 2 + A * Math.sin(-Math.PI / 2 + Math.PI * (k + u))];
 
-        let wire = `M-4,${yAt(-4).toFixed(1)}`;
-        for (let x = -2; x <= w + 4; x += 2) wire += ` L${x},${yAt(x).toFixed(1)}`;
+        // Wire: even half-turns are the visible front strands, odd ones go behind the bar
+        let front = '', back = '';
+        for (let k = 0; k < halves; k++) {
+            let d = '';
+            for (let st = 0; st <= 12; st++) {
+                const [x, y] = pt(k, st / 12);
+                d += (st ? ' L' : 'M') + f(x) + ',' + f(y);
+            }
+            if (k % 2 === 0) front += d + ' '; else back += d + ' ';
+        }
 
-        const count = Math.max(6, Math.round(w / 20));
-        const step = w / count;
-        let bulbs = '';
-        for (let k = 0; k < count; k++) {
-            const x = step * (k + 0.5);
-            const up = k % 2 === 1;
-            const rot = slope(x) + tilts[k % 4] + (up ? 180 : 0);
-            bulbs += `<g transform="translate(${x.toFixed(1)},${yAt(x).toFixed(1)}) rotate(${rot.toFixed(1)})">`
-                  +  `<g class="sam-bulb" style="color:${colors[k % 4]};animation-delay:${((k % 4) * 0.45).toFixed(2)}s">`
-                  +  `<path d="M0,1 C-4.2,4 -4.2,9 0,14 C4.2,9 4.2,4 0,1Z" fill="currentColor"/>`
-                  +  `<ellipse cx="-1.3" cy="6" rx="0.8" ry="2.2" fill="#fff" opacity=".45"/></g>`
-                  +  `<rect x="-2" y="-1" width="4" height="4" rx="1" fill="#37474f"/></g>`;
+        // Bulbs: two per front strand, hanging down with a slight tilt
+        const colors = ['#ff5252', '#ffd54f', '#42a5f5', '#fafafa'];
+        const tilts = [-16, 14, -10, 18];
+        let bulbs = '', b = 0;
+        for (let k = 0; k < halves; k += 2) {
+            [0.28, 0.66].forEach(u => {
+                const [x, y] = pt(k, u);
+                if (x < -4 || x > w + 4) return;
+                bulbs += `<g transform="translate(${f(x)},${f(y)}) rotate(${tilts[b % 4]})">`
+                      +  `<g class="sam-bulb" style="color:${colors[b % 4]};animation-delay:${((b % 4) * 0.45).toFixed(2)}s">`
+                      +  `<path d="M0,1 C-4.2,4 -4.2,9 0,14 C4.2,9 4.2,4 0,1Z" fill="currentColor"/>`
+                      +  `<ellipse cx="-1.3" cy="6" rx="0.8" ry="2.2" fill="#fff" opacity=".5"/></g>`
+                      +  `<rect x="-2" y="-1" width="4" height="4" rx="1" fill="#263238"/></g>`;
+                b++;
+            });
+        }
+
+        // Snow drift along the top edge (rounded lobes of varying depth)
+        const lobes = Math.max(6, Math.round(w / 16)), lw = w / lobes;
+        const depths = [5, 8, 4, 7, 6, 9, 5];
+        let cap = `M0,0 L${w},0 L${w},3`;
+        for (let k = lobes - 1; k >= 0; k--) {
+            const xl = k * lw, xr = (k + 1) * lw;
+            cap += ` Q${f((xl + xr) / 2)},${3 + 2 * depths[k % 7]} ${f(xl)},3`;
+        }
+        cap += ' Z';
+
+        // Falling flakes
+        const fc = Math.max(10, Math.round(w / 16));
+        let flakes = '';
+        for (let k = 0; k < fc; k++) {
+            const x = (k + 0.5) * w / fc + 4 * Math.sin(k * 7.3);
+            const r = (0.8 + ((k * 5) % 4) * 0.3).toFixed(1);
+            const dur = 4.5 + ((k * 3) % 5) * 0.8;
+            const delay = (k * 0.9) % dur;
+            flakes += `<circle class="sam-flake" cx="${f(x)}" cy="3" r="${r}" fill="#fff" style="--dx:${k % 2 ? 6 : -6}px;animation-duration:${dur.toFixed(1)}s;animation-delay:-${delay.toFixed(1)}s"/>`;
         }
 
         t.insertAdjacentHTML('afterbegin',
-            `<svg class="sam-lights" width="${w}" height="34" viewBox="0 0 ${w} 34" aria-hidden="true">`
-          + `<path d="${wire}" fill="none" stroke="#455a64" stroke-width="1.6" stroke-linecap="round"/>${bulbs}</svg>`);
+            `<svg class="sam-lights" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="--h:${h}px" aria-hidden="true">`
+          + `<path d="${back}" fill="none" stroke="#1b5e20" stroke-width="1.2" stroke-dasharray="2 2" opacity=".55"/>`
+          + `<path d="${cap}" fill="#fff" opacity=".96"/>`
+          + `<path d="${front}" fill="none" stroke="#14381a" stroke-width="1.8" stroke-linecap="round"/>`
+          + bulbs + flakes + `</svg>`);
     };
     setTimeout(buildLights, 150);
 
