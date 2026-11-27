@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.6.4
+// @version      1.6.5
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -75,10 +75,39 @@
     "URGENCIA"
 	];
 
+    // =========================================================================
+    // HOLIDAYS (non-working days besides Sat/Sun), format "YYYY-MM-DD"
+    // Add the next year's dates to this list and bump @version to push them to all PCs.
+    // =========================================================================
+    const HOLIDAYS = [
+        // 2026
+        "2026-12-08", // Inmaculada Concepción (mar)
+        "2026-12-25", // Navidad (vie)
+        // 2027
+        // "2027-01-01",
+    ];
+
+    // How many consecutive days a prescription validated today has to cover:
+    // today + every following Saturday / Sunday / holiday (1 = normal day).
+    const DAY_NAMES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+    const toISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const isNonWorking = d => d.getDay() === 0 || d.getDay() === 6 || HOLIDAYS.includes(toISO(d));
+    const getCoverInfo = (from = new Date()) => {
+        const last = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+        let days = 1;
+        for (;;) {
+            const next = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
+            if (!isNonWorking(next)) break;
+            last.setTime(next.getTime());
+            days++;
+        }
+        return { days, last };   // last = final day covered by today's validation
+    };
+
     const s = document.createElement("style");
     s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.6.4";
+    const SCRIPT_VERSION = "1.6.5";
 
     s.innerHTML += `
     .sam-tree{position:absolute;left:0;bottom:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0.09;}
@@ -88,7 +117,9 @@
     .sam-flake{opacity:.9;animation:sam-fall 5s linear infinite;}
     @keyframes sam-fall{0%{transform:translate(0,0);opacity:0;}12%{opacity:.9;}85%{opacity:.9;}100%{transform:translate(var(--dx,4px),var(--h,50px));opacity:0;}}
     .sam-ver{font-size:9px;font-weight:600;color:#2e7d32;background:#fff;border:1px solid #a5d6a7;border-radius:8px;padding:1px 6px;margin-left:6px;letter-spacing:0;text-shadow:none;display:inline-block;line-height:11px;vertical-align:middle;}
-    @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}.sam-flake{animation:none;}}
+    .sam-days-hl{background:#ffe69c !important;outline:2px solid #e0a800;outline-offset:-2px;animation:sam-pulse 1.4s ease-in-out infinite;}
+    @keyframes sam-pulse{0%,100%{outline-color:#e0a800;}50%{outline-color:#fff3cd;}}
+    @media (prefers-reduced-motion: reduce){.sam-bulb{animation:none;opacity:1;}.sam-flake{animation:none;}.sam-days-hl{animation:none;}}
     `;
     document.head.appendChild(s);
 
@@ -283,6 +314,33 @@
     statsHeader.appendChild(newPatEl);
     statsHeader.appendChild(discPatEl);
     o.appendChild(statsHeader);
+
+    // ==========================================
+    // MULTI-DAY WARNING (Fridays / day before a holiday)
+    // Banner under the stats header + pulsing highlight on the matching "X nD" button.
+    // Refreshed from the 1s polling interval (also covers a shift crossing midnight).
+    // ==========================================
+    const daysBanner = document.createElement("div");
+    daysBanner.style.cssText = "display:none;background:#fff3cd;color:#856404;border:1px solid #ffe69c;border-radius:8px;padding:8px;text-align:center;font-size:10px;font-weight:bold;line-height:1.4;";
+    o.appendChild(daysBanner);
+
+    const updateDaysWarning = () => {
+        const { days, last } = getCoverInfo();
+        const key = days + '|' + toISO(last);
+        if (daysBanner.dataset.samKey !== key) {
+            daysBanner.dataset.samKey = key;
+            if (days > 1) {
+                const dd = String(last.getDate()).padStart(2, '0'), mm = String(last.getMonth() + 1).padStart(2, '0');
+                daysBanner.innerHTML = `⚠️ HOY VALIDAR POR ${days} DÍAS<div style="font-weight:600;font-size:9px;margin-top:2px;">Cubre hasta ${DAY_NAMES[last.getDay()]} ${dd}/${mm}${days > 4 ? " · X 4D es el máximo" : ""}</div>`;
+                daysBanner.style.display = "block";
+            } else {
+                daysBanner.style.display = "none";
+            }
+        }
+        const target = days > 1 ? `X ${Math.min(days, 4)}D` : null;
+        document.querySelectorAll('.sam-btn').forEach(b => b.classList.toggle('sam-days-hl', !!target && b.textContent.trim() === target));
+    };
+    setTimeout(updateDaysWarning, 200);
 
     const p = document.createElement("div");
     p.style.cssText = "padding:10px;display:none;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;";
@@ -1041,6 +1099,9 @@
         // C. Re-fit the title-bar Christmas lights if the bar width changed
         buildLights();
         buildTree();
+
+        // D. Multi-day warning banner + button highlight
+        updateDaysWarning();
 
     }, 1000);
 
