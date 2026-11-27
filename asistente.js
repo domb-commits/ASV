@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asistente de Validación
 // @namespace    https://github.com/domb-commits/ASV
-// @version      1.6.1
+// @version      1.6.2
 // @description  Automatización y asistencia para validación de recetas
 // @author       You
 // @match        http://10.7.33.28/hlcm6/receta500.php
@@ -76,11 +76,12 @@
 	];
 
     const s = document.createElement("style");
-    s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid rgba(255,255,255,0.35);margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
+    s.innerHTML = ".sam-btn{transition:all 0.2s; border:none !important; cursor:pointer; width:100% !important; display:block; text-align:center; box-sizing:border-box;}.sam-active{transform:translateY(2px);filter:brightness(0.9);}.sam-separator{border-top:1px solid #e9ecef;margin:4px 0;width:100%;}#sam-tooltip{position:fixed;background:#2d3436;color:#fff;padding:8px 12px;border-radius:6px;font-size:11px;z-index:2147483647;pointer-events:none;display:none;max-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.2);line-height:1.4;font-family:sans-serif;} .sam-input{border:1px solid #ced4da; border-radius:4px; padding:8px; font-size:11px; width:100% !important; box-sizing:border-box; background:#fff !important; color:#333 !important;} .sam-input:focus{outline:2px solid #a2c2e8 !important; border-color:transparent !important;}";
     // Keep in sync with @version above (@grant none → GM_info is unavailable)
-    const SCRIPT_VERSION = "1.6.1";
+    const SCRIPT_VERSION = "1.6.2";
 
     s.innerHTML += `
+    .sam-tree{position:absolute;left:0;bottom:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0.09;}
     .sam-lights{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
     .sam-bulb{animation:sam-twinkle 1.8s ease-in-out infinite;}
     @keyframes sam-twinkle{0%,100%{opacity:.8;filter:drop-shadow(0 0 0 currentColor);}50%{opacity:1;filter:drop-shadow(0 0 3px currentColor);}}
@@ -97,7 +98,23 @@
 
     const e = document.createElement("div");
     e.id = "custom-floating-menu";
-    e.style.cssText = "position:fixed;top:20px;right:20px;background:#c62828;border:1px solid #8e1b1b;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
+    e.style.cssText = "position:fixed;top:20px;right:20px;background:#fff;border:1px solid #dee2e6;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:2147483646;display:flex;flex-direction:column;font-family:'Segoe UI',Tahoma,sans-serif;width:260px;min-width:260px;overflow:hidden;user-select:none;transition:width 0.15s ease-out, min-width 0.15s ease-out;";
+
+    // Faint pine tree behind the menu content (z-index:-1 inside the menu's stacking
+    // context: above the card background, below every button and panel)
+    e.insertAdjacentHTML('afterbegin',
+        `<svg class="sam-tree" viewBox="0 0 220 400" preserveAspectRatio="xMidYMax meet" aria-hidden="true">`
+      + `<rect x="96" y="340" width="28" height="56" fill="#6d4c41"/>`
+      + `<g fill="#388e3c" stroke="#1b5e20" stroke-width="2" stroke-linejoin="round">`
+      +   `<path d="M110,210 L214,350 Q162,362 110,354 Q58,362 6,350 Z"/>`
+      +   `<path d="M110,140 L196,270 Q153,282 110,274 Q67,282 24,270 Z"/>`
+      +   `<path d="M110,80 L176,190 Q143,200 110,193 Q77,200 44,190 Z"/>`
+      +   `<path d="M110,38 L152,120 Q131,128 110,122 Q89,128 68,120 Z"/>`
+      + `</g>`
+      + `<path d="M110,10 L113.5,19.2 L123.3,19.7 L115.7,25.9 L118.2,35.3 L110,30 L101.8,35.3 L104.3,25.9 L96.7,19.7 L106.5,19.2 Z" fill="#f9a825"/>`
+      + `<g fill="#c62828"><circle cx="100" cy="98" r="5"/><circle cx="90" cy="165" r="5.5"/><circle cx="80" cy="235" r="6"/><circle cx="60" cy="318" r="6.5"/><circle cx="160" cy="330" r="6.5"/><circle cx="141" cy="252" r="6"/></g>`
+      + `<g fill="#f9a825"><circle cx="124" cy="108" r="4.5"/><circle cx="128" cy="175" r="5"/><circle cx="110" cy="222" r="5"/><circle cx="120" cy="300" r="6"/><circle cx="90" cy="338" r="5.5"/></g>`
+      + `</svg>`);
 
     const t = document.createElement("div");
     t.style.cssText = "position:relative;background:linear-gradient(180deg,#388e3c,#2e7d32);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.35);padding:12px;cursor:move;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:bold;border-bottom:1px solid #1b5e20;";
@@ -194,7 +211,7 @@
     // PATIENT ANALYTICS HEADER
     // ==========================================
     const statsHeader = document.createElement("div");
-    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding:6px 8px; background:#fff; border-radius:8px; margin-bottom:2px;";
+    statsHeader.style.cssText = "display:flex; justify-content:space-between; font-size:10px; font-weight:bold; padding-bottom:6px; border-bottom:1px solid #e9ecef; margin-bottom:2px;";
     
 	const newPatEl = document.createElement("div");
 	    newPatEl.style.cssText = "color:#0c5460; cursor:pointer; text-decoration:underline; transition:0.2s;";
@@ -236,7 +253,7 @@
     };
     document.addEventListener('focusin',(ev)=>{if(ev.target.closest('#custom-floating-menu'))prevent(ev);},true);
 
-    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#fff;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
+    p.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">CONFIGURACIÓN CAMBIOS POR PA</div><input id="sam_og" class="sam-input" placeholder="Original (ej. 102-0035)" style="margin-bottom:2px;"><input id="sam_ds" class="sam-input" placeholder="Nuevo (ej. 102-0012)" style="margin-bottom:4px;"><button id="sam_add" style="width:100%;padding:10px;background:#d4edda;color:#155724;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">AGREGAR CAMBIO LOCAL</button><div style="font-size:10px;font-weight:bold;margin-top:5px;color:#6c757d;">CAMBIOS ACTIVOS:</div><ul id="sam_ul" style="list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;"></ul><div style="display:flex;gap:5px;margin-top:5px;"><button id="sam_exp" style="flex:1;padding:6px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">EXPORTAR</button><button id="sam_imp" style="flex:1;padding:6px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">IMPORTAR</button></div><button id="sam_back" style="width:100%;margin-top:8px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
     e.appendChild(p);
 
     s_view.innerHTML = `<div style="background:#f8f9fa;color:#495057;padding:8px;margin:-10px -10px 8px -10px;font-size:10px;font-weight:bold;text-align:center;border-bottom:1px solid #eee;">FILTRO POR SERVICIO</div><div id="sam_serv_list" style="background:#fff;border:1px solid #f1f3f5;border-radius:6px;width:100%;padding:4px;box-sizing:border-box;"></div><div style="display:flex;gap:4px;margin-top:2px;"><button id="sam_serv_all" style="flex:1;padding:6px 2px;background:#d4edda;color:#155724;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">MARCAR TODOS</button><button id="sam_serv_clear" style="flex:1;padding:6px 2px;background:#fff3cd;color:#856404;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">LIMPIAR TODO</button><button id="sam_serv_preset" style="flex:1;padding:6px 2px;background:#e3f2fd;color:#0d47a1;border:none;border-radius:4px;font-size:8px;font-weight:bold;cursor:pointer;">4ºTurno</button></div><button id="sam_serv_back" style="width:100%;margin-top:4px;padding:10px;background:#e9ecef;color:#495057;border-radius:6px;font-weight:bold;font-size:11px;border:none;cursor:pointer;">VOLVER</button>`;
@@ -712,7 +729,7 @@
 
     // Encabezado de sección centrado
     const sectionTitle = document.createElement("div");
-    sectionTitle.style.cssText = "text-align:center;font-weight:bold;font-size:11px;color:#fff;padding:4px 0;text-transform:uppercase;letter-spacing:0.5px;";
+    sectionTitle.style.cssText = "text-align:center;font-weight:bold;font-size:11px;color:#495057;padding:4px 0;text-transform:uppercase;letter-spacing:0.5px;";
     sectionTitle.innerText = "OPCIONES DE TRASPASO";
 
     // Grid de opciones de 2 columnas
